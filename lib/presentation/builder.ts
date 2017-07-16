@@ -7,6 +7,7 @@ import {
     MathList, Atom, BinRel, Fence, Field, Op, OrdPunct, Dec,
     Hole
 } from "./data";
+import {FontVariant} from "./misc";
 
 /**
  * We use this class to conveniently build MathLists using the append
@@ -39,7 +40,7 @@ export class Builder<T>{
         this.cursor = inner;
     }
 
-    pop(){
+    pop(): MathList<T>{
         let cursor = this.stack.pop();
         if(cursor === undefined){
             console.log(this);
@@ -57,8 +58,11 @@ export class Builder<T>{
         this.item(ord);
     }
 
-    ord(nucleus: string){
-        return this.item(new OrdPunct<T>("ord", nucleus));
+    ord(nucleus: string, variant?: FontVariant){
+        let ord = new OrdPunct<T>("ord", nucleus);
+        if(variant) ord.variant = variant;
+        this.item(ord);
+        return ord;
     }
 
     punct(nucleus: string){

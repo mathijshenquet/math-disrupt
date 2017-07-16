@@ -1,81 +1,19 @@
 body{
-  font-size: 10pt;
-  font-family: KaTeX_Main, serif;
-  text-align: initial;
+  font-size: 12pt;
 }
 
-.ord{
-  font-style: italic;
-  font-size: inherit;
+@import "./presentation/index";
+
+@keyframes blinker {
+  50% { border-color: transparent; }
 }
 
-.bin > .head {
-  margin: 0 0.3em;
-}
+.caret{
+  @width: 0.06em;
 
-.integrand {
-  margin: 0 0.3em;
-}
-
-@thin-space: 0.1667em;
-@medium-space: 0.2222em;
-@thick-space: 0.2778em;
-
-.punct{
-  margin-right: @thin-space;
-}
-
-.bin{
-  margin-left: @medium-space;
-  margin-right: @medium-space;
-}
-
-.rel{
-  margin-left: @thick-space;
-  margin-right: @thick-space;
-}
-
-.punct + .rel{
-  margin-left: @thin-space;
-}
-
-.punct + .bin{
-  margin-left: @thin-space;
-}
-
-.subsup {
-  display: inline-flex;
-  flex-direction: column-reverse;
-  justify-content: space-between;
-}
-
-.sub, .sup{
-  font-size: 0.75em;
-}
-
-.op{
-  margin-left: @thin-space;
-}
-
-.op.integral {
-  display: inline-flex;
-  align-items: stretch;
-
-  .nucleus {
-    font-family: KaTeX_Size2;
-    margin-bottom: @thick-space;
-    margin-top: @thin-space;
-  }
-
-  .subsup {
-    display: flex;
-  }
-
-  .sup{
-    margin-left: .667em;
-  }
-}
-
-.variant-normal{
-  font-style: normal;
+  animation: blinker 1s linear infinite;
+  border: 0 black;
+  border-right: @width solid;
+  border-left: @width solid;
+  margin: 0 -@width;
 }

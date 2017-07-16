@@ -20,3 +20,16 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
         </span>;
     }
 }
+
+export interface MathBlockProps  {
+    term: Expandable
+}
+
+export class MathInline extends PureComponent<MathBlockProps, {}> {
+    render(): JSX.Element {
+        let items = this.props.term.expand();
+        return <span className="MathRoot">
+            {renderMathList(items, (item, role) => <MathTerm term={item} role={role} />)}
+        </span>;
+    }
+}

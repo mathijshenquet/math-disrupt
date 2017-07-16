@@ -40,8 +40,6 @@ export class Hole<T>{
 export type MathList<T=never> = Array<Atom<T>>;
 
 export function renderMathList<T>(list: MathList<T>, renderer: Renderer<T>): JSX.Element[] {
-    console.log(list);
-
     return list.map((item) => {
         if(item instanceof Hole)
             return renderer(item.hole, "");
