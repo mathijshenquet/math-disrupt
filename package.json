@@ -1,15 +1,21 @@
 {
   "name": "math-disrupt",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "version": "0.0",
+  "author": "Mathijs Henquet <mathijs.henquet@gmail.com>",
+  "bugs": {
+    "url" : "https://github.com/mathijshenquet/math-disrupt/issues",
+    "email" : "mathijs.henquet@gmail.com"
+  },
+  "repository": {
+    "type" : "git",
+    "url" : "https://github.com/mathijshenquet/math-disrupt.git"
+  },
+  "license": "AGPLv3",
+  "private": true,
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "webpack-dev-server",
-    "p": "tsc ; ts-node ./ts-compiled/main"
+    "start": "webpack-dev-server"
   },
-  "author": "",
-  "license": "ISC",
   "devDependencies": {
     "@types/react": "^15.0.34",
     "@types/react-dom": "^15.5.1",
@@ -26,8 +32,5 @@
     "typescript": "^2.4.1",
     "webpack": "^3.2.0",
     "webpack-dev-server": "^2.5.1"
-  },
-  "dependencies": {
-    "dev": "^0.1.3"
   }
 }
