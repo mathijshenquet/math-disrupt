@@ -1,14 +1,14 @@
 {
   "name": "math-disrupt",
-  "version": "0.0",
+  "version": "0.1.0",
   "author": "Mathijs Henquet <mathijs.henquet@gmail.com>",
   "bugs": {
-    "url" : "https://github.com/mathijshenquet/math-disrupt/issues",
-    "email" : "mathijs.henquet@gmail.com"
+    "url": "https://github.com/mathijshenquet/math-disrupt/issues",
+    "email": "mathijs.henquet@gmail.com"
   },
   "repository": {
-    "type" : "git",
-    "url" : "https://github.com/mathijshenquet/math-disrupt.git"
+    "type": "git",
+    "url": "https://github.com/mathijshenquet/math-disrupt.git"
   },
   "license": "AGPLv3",
   "private": true,
