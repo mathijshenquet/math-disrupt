@@ -3,8 +3,10 @@
  * @module presentation/builder
  */
 
-import {MathList, Atom, BinRel, Fence, Field, BaseAtom, Op, OrdPunct, Dec} from "./data";
-import {Expandable} from "./expandable";
+import {
+    MathList, Atom, BinRel, Fence, Field, Op, OrdPunct, Dec,
+    Hole
+} from "./data";
 
 /**
  * We use this class to conveniently build MathLists using the append
@@ -24,8 +26,12 @@ export class Builder<T>{
         this.stack = [];
     }
 
-    pushitem(item : Atom<T>) {
+    item(item: Atom<T>){
         this.cursor.push(item);
+    }
+
+    hole(item: T){
+        this.cursor.push(new Hole(item))
     }
 
     push(inner: MathList<T> = []){
@@ -48,56 +54,48 @@ export class Builder<T>{
     symbol(nucleus: string){
         let ord = new OrdPunct<T>("ord", nucleus);
         ord.variant = "normal";
-        this.pushItem(ord);
+        this.item(ord);
     }
 
     ord(nucleus: string){
-        return this.pushItem(new OrdPunct<T>("ord", nucleus));
+        return this.item(new OrdPunct<T>("ord", nucleus));
     }
 
     punct(nucleus: string){
-        this.pushItem(new OrdPunct<T>("punct", nucleus));
+        this.item(new OrdPunct<T>("punct", nucleus));
     }
 
-    op(nucleus: string, inner: Field<T>){
-        this.pushItem(new Op<T>("op", nucleus, inner));
+    op(nucleus: string, inner: Field<T>): Op<T> {
+        let op = new Op<T>("op", nucleus, inner);
+        this.item(op);
+        return op;
     }
 
     bin(nucleus: string, left: Field<T>, right: Field<T>){
-        this.pushItem(new BinRel("bin", nucleus, left, right));
+        this.item(new BinRel("bin", nucleus, left, right));
     }
 
     rel(nucleus: string, left: Field<T>, right: Field<T>){
-        this.pushItem(new BinRel("rel", nucleus, left, right));
+        this.item(new BinRel("rel", nucleus, left, right));
     }
 
-    openclose(left: string, right: string, inner: Field<T>){
-        this.pushItem(new Fence(left, right, inner));
+    fence(left: string, inner: Field<T>, right: string){
+        this.item(new Fence(left, right, inner));
     }
 
-    open(left: string){
-        let inner: MathList<T> = [];
-        this.pushItem(new Fence<T>(left, undefined, inner));
-        this.push(inner);
-    }
-
-    close(right: string){
-        this.pop();
-        let openclose = <Fence>this.peekItem();
-        openclose.close = right;
+    overline(inner: Field<T>){
+        this.item(new Dec("over", inner));
     }
 
     append(tail: Atom<T> | MathList<T>){
         if(tail instanceof Builder){
             for(const item of tail.items) {
-                this.pushItem(item);
+                this.item(item);
             }
         }else if(tail instanceof Array){
             for(const item of tail){
                 this.append(item);
             }
-        }else{
-            this.pushItem(tail);
         }
     }
 }

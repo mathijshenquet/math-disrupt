@@ -1,11 +1,12 @@
 
-import {Algebra, Expr, Term, Bind as Binder} from "../nominal/algebra";
+import {Algebra} from "../nominal/algebra";
+import {Expr, Term, Bind as Binder} from "../nominal/terms";
 import * as sig from "../nominal/signature";
 import {Signature} from "../nominal/signature";
-import {Builder, Expandable} from "../presentation";
+import {Builder, Expandable, Hole} from "../presentation";
 
-function renderBinary(builder: Builder, head: string, leaves: Expandable[]) {
-    builder.bin(head, leaves[0], leaves[1]);
+function renderBinary(builder: Builder<Expandable>, head: string, leaves: Expandable[]) {
+    builder.bin(head, new Hole(leaves[0]), new Hole(leaves[1]));
 }
 
 export let signature = new Signature<"string" | "number", "term">();
@@ -18,18 +19,18 @@ signature.define("int", [new sig.Bind<"string", "term">("string", "term"), "term
 
 let $ = new Algebra(signature, mathSorting);
 
-function integralRender(builder: Builder, head: string, leaves: Expr[]) {
-    var binder = leaves[0];
+function integralRender(builder: Builder<Expandable>, _head: string, leaves: Expr[]) {
+    const binder = leaves[0];
 
     if(!(binder instanceof Binder)) {
         console.log(binder);
         throw new Error("not a binder");
     }
 
-    builder.op("∫", binder.term);
-    builder.sub(leaves[1]);
-    builder.sup(leaves[2]);
-    builder.peekItem().size = "integral";
+    let intOp = builder.op("∫", new Hole(binder.term));
+    intOp.sub = new Hole(leaves[1]);
+    intOp.sup = new Hole(leaves[2]);
+    intOp.size = "integral";
 }
 
 function mathSorting(atom : string | number){

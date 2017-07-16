@@ -5,7 +5,6 @@ require("./index.less");
 import {render} from "react-dom";
 import * as React from "react";
 import {integral} from "./test/math.example";
-import {MathList} from "./components/Atoms";
-import {present as renderPres} from "./presentation/index";
+import {MathTerm} from "./components/Atoms";
 
-render(<MathList items={integral} />, document.getElementById("mount"));
+render(<MathTerm term={integral} role="" />, document.getElementById("mount"));
