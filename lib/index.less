@@ -3,17 +3,4 @@ body{
 }
 
 @import "./presentation/index";
-
-@keyframes blinker {
-  50% { border-color: transparent; }
-}
-
-.caret{
-  @width: 0.06em;
-
-  animation: blinker 1s linear infinite;
-  border: 0 black;
-  border-right: @width solid;
-  border-left: @width solid;
-  margin: 0 -@width;
-}
+@import "./components/editor";
