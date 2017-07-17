@@ -5,7 +5,7 @@
 ## Usage
 Run `npm install --dev` to install dependencies.
 
-Use `npm start` for a webpack live server on `localhost:8080`
+Use `npm start` for a webpack live server on `localhost:8080/web`
 
 ## Contribute
 Pull requests are welcome. If you find a bug or an omission, don't be
