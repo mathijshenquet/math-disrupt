@@ -3,33 +3,34 @@
  */
 
 import * as React from "react";
-import {PureComponent} from "react";
-import {Expandable} from "../presentation";
-import {renderMathList} from "../presentation/data";
+import {PureComponent, ReactElement, ReactNode} from "react";
+import {Augmented, render} from "../presentation";
+import {Term} from "../nominal/terms";
+import {RenderState} from "../presentation/expandable";
+import {Field} from "../presentation/markup";
+
+let termRenderer: RenderState<Term> = (term: Augmented<Term>, role?: string) =>
+    <MathTerm term={term.augmentation} role={role} contents={term.contents} />;
 
 export interface MathTermProps  {
-    term: Expandable,
-    role: string
+    term: Term,
+    role?: string,
+    contents: Field<Term>,
 }
 
 export class MathTerm extends PureComponent<MathTermProps, {}> {
-    render(): JSX.Element {
-        let items = this.props.term.expand();
-        return <span className={"MathTerm "+this.props.role}>
-            {renderMathList(items, (item, role) => <MathTerm term={item} role={role} />)}
-        </span>;
+    render(): ReactElement<any> {
+        return render(this.props.role, this.props.contents, termRenderer);
     }
 }
 
 export interface MathBlockProps  {
-    term: Expandable
+    term: Term,
+    caret?: Array<number>
 }
 
 export class MathInline extends PureComponent<MathBlockProps, {}> {
-    render(): JSX.Element {
-        let items = this.props.term.expand();
-        return <span className="MathRoot">
-            {renderMathList(items, (item, role) => <MathTerm term={item} role={role} />)}
-        </span>;
+    render(): ReactElement<any> {
+        return termRenderer(this.props.term.expand(), "MathRoot");
     }
 }

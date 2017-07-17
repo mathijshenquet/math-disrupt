@@ -1,19 +1,14 @@
-import {OrdPunct} from "./presentation/data";
+import {OrdPunct} from "./presentation/markup";
 declare const require:any;
 
 require("./index.less");
 
 import {render} from "react-dom";
 import * as React from "react";
-import {integral, $} from "./test/math.example";
-import {MathInline} from "./components/Atoms";
+import {integral, $} from "./test/math";
+import {Editor} from "./components/Editor";
 
-console.log(integral);
+console.log(integral.expand());
 
-let doc = <div>
-    Let <MathInline term={$.op("var", "x")} /> be
-    <MathInline term={integral} />
-    such t<span className="caret"></span>hat
-</div>;
-
-render(doc, document.getElementById("mount"));
+let doc = ["Let", $.op("var", $.atom("x")), "be", integral, "such that"]
+render(<Editor doc={doc} />, document.getElementById("mount"));

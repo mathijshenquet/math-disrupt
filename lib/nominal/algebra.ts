@@ -13,7 +13,7 @@
 
 import {Signature} from "./signature";
 import * as signature from "./signature";
-import {Bind, Expr, Term} from "./terms";
+import {Atom, Bind, Term, Form} from "./terms";
 
 /**
  * A name sorting for the countably infinite set A of atomic names is given by a
@@ -38,13 +38,17 @@ export class Algebra<A, N, D> {
         this.sorting = sorting;
     }
 
-    op(head: A & string, ...leaves: (Expr<A>)[]): Term<A> {
+    op(head: A & string, ...leaves: (Term<A>)[]): Form<A> {
         let cell = this.signature.ops[head];
         // TODO typechecking
-        return new Term(head, leaves, cell);
+        return new Form(head, leaves, cell);
     }
 
-    bind(name: A, term: Term<A>): Bind<A> {
-        return new Bind(name, term, new signature.Bind(name, term.sort));
+    bind(name: A, term: Form<A>): Bind<A> {
+        return new Bind(new Atom(name), term, new signature.Bind(name, term.sort));
+    }
+
+    atom(name: A){
+        return new Atom(name);
     }
 }

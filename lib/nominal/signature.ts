@@ -15,7 +15,8 @@
  */
 
 import {Builder, Expandable} from "../presentation/index";
-import {Expr} from "./terms";
+import {Term} from "./terms";
+import * as terms from "./terms";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
@@ -32,7 +33,7 @@ export type Sort<N, D> = N | D | Bind<N, D> | Op<N, D>;
 /**
  * Represents a bound name in a term of sort D.
  */
-export class Bind<N=any, D=any> {
+export class Bind<N=any, D=any, A=any> {
     name: N;
     term: D;
 
@@ -41,31 +42,35 @@ export class Bind<N=any, D=any> {
         this.term = term;
     }
 
-    notation(builder: Builder<Expandable>, name: any, term: Expandable){
-        builder.append(name.toString());
+    notation(builder: Builder<Term<A>>, name: A, term: Term<A>){
+        builder.ord(name.toString());
         builder.punct(".");
-        builder.hole(term);
+
+        if((term instanceof terms.Form) || (term instanceof terms.Bind))
+            builder.item(term.expand());
+        else
+            builder.ord(term.toString());
     }
 }
 
-export interface Notation{
-    (builder: Builder<Expandable>, head: string, leaves: Expr<any>[]): void
+export interface Notation<A>{
+    (builder: Builder<Term<A>>, head: A, leaves: Term<A>[]): void
 }
 
-export class Op<N=any, D=any> {
+export class Op<N=any, D=any, A=any> {
     op: string;
     dom: Sort<N, D>[];
     cod: D;
-    customNotation?: Notation;
+    customNotation?: Notation<A>;
 
-    constructor(op: string, dom: Sort<N, D>[], cod: D, customNotation?: Notation) {
+    constructor(op: string, dom: Sort<N, D>[], cod: D, customNotation?: Notation<A>) {
         this.op = op;
         this.dom = dom;
         this.cod = cod;
         this.customNotation = customNotation;
     }
 
-    notation(builder: Builder<Expandable>, head: any, leaves: Expr<any>[]){
+    notation(builder: Builder<Term<A>>, head: A, leaves: Term<A>[]){
         if(this.customNotation)
             return this.customNotation(builder, head, leaves);
 
@@ -73,21 +78,23 @@ export class Op<N=any, D=any> {
         builder.push();
         for(let i = 0; i < leaves.length; i++) {
             if (i != 0) builder.punct(",");
-            builder.hole(leaves[i]);
+
+            let leaf = leaves[i];
+            builder.item(leaf.expand());
         }
         let inner = builder.pop();
         builder.fence("(", inner, ")");
     }
 }
 
-export class Signature<N=any, D=any> {
-    ops: { [s: string]: Op<N, D> };
+export class Signature<N=any, D=any, A=any> {
+    ops: { [s: string]: Op<N, D, A> };
 
     constructor(){
         this.ops = {};
     }
 
-    define(op: string, dom: Sort<N, D>[], cod: D, customNotation?: Notation) {
+    define(op: string, dom: Sort<N, D>[], cod: D, customNotation?: Notation<A>) {
         this.ops[op] = new Op(op, dom, cod, customNotation);
         return this.ops[op];
     }

@@ -5,9 +5,10 @@
 
 import {
     MathList, Atom, BinRel, Fence, Field, Op, OrdPunct, Dec,
-    Hole
-} from "./data";
+    Augmented
+} from "./markup";
 import {FontVariant} from "./misc";
+import {Term} from "../nominal/terms";
 
 /**
  * We use this class to conveniently build MathLists using the append
@@ -16,8 +17,7 @@ import {FontVariant} from "./misc";
  * @param S - The type of symbols
  */
 export class Builder<T>{
-    items: MathList<T>;
-
+    private items: MathList<T>;
     private stack: Array<MathList<T>>;
     private cursor: MathList<T>;
 
@@ -27,12 +27,14 @@ export class Builder<T>{
         this.stack = [];
     }
 
-    item(item: Atom<T>){
-        this.cursor.push(item);
+    build(): MathList<T> | Atom<T>{
+        if(this.items.length == 1)
+            return this.items[0];
+        return this.items;
     }
 
-    hole(item: T){
-        this.cursor.push(new Hole(item))
+    item(item: Atom<T>){
+        this.cursor.push(item);
     }
 
     push(inner: MathList<T> = []){
@@ -89,17 +91,5 @@ export class Builder<T>{
 
     overline(inner: Field<T>){
         this.item(new Dec("over", inner));
-    }
-
-    append(tail: Atom<T> | MathList<T>){
-        if(tail instanceof Builder){
-            for(const item of tail.items) {
-                this.item(item);
-            }
-        }else if(tail instanceof Array){
-            for(const item of tail){
-                this.append(item);
-            }
-        }
     }
 }

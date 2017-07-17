@@ -18,17 +18,25 @@
 
 import {FontVariant} from "./misc";
 import * as React from "react";
+import {Renderable, RenderState} from "./expandable";
+import {ReactElement} from "react";
 
 /**
  * This is an empty type called `never' without any valid members. By default
  * the type of holes T is `never'. In that case the presentational datatypes
  * just contain ordinary members.
  */
-export class Hole<T>{
-    hole: T;
+export class Augmented<T> implements Renderable<T>{
+    augmentation: T;
+    contents: MathList<T> | Atom<T>;
 
-    constructor(hole: T){
-        this.hole = hole;
+    constructor(augmentation: T, content: MathList<T> | Atom<T>){
+        this.augmentation = augmentation;
+        this.contents = content;
+    }
+
+    render(renderer: RenderState<T>, role?: string): ReactElement<any> {
+        return renderer(this, role);
     }
 }
 
@@ -39,38 +47,20 @@ export class Hole<T>{
  */
 export type MathList<T=never> = Array<Atom<T>>;
 
-export function renderMathList<T>(list: MathList<T>, renderer: Renderer<T>): JSX.Element[] {
-    return list.map((item) => {
-        if(item instanceof Hole)
-            return renderer(item.hole, "");
-        else
-            return item.render(renderer);
-    });
-}
-
 /**
  * A field is an TeX notion, an TeX atom contains a nucleus, sub- and supscript
  * Field all of which are empty, contain a symbol or a MathList. Empty will
  * be represented by the absence of a field (see below).
  */
-export type Field<T=never> = Hole<T> | Atom<T> | MathList<T>;
+export type Field<T=never> = Atom<T> | MathList<T>;
 
-function renderField<T>(role: string, field: Field<T>, renderer: Renderer<T>): JSX.Element {
-    if(field instanceof Hole)
-        return renderer(field.hole, role);
-
+export function render<T>(role: string | undefined, field: Field<T>, renderer: RenderState<T>): ReactElement<any> {
     if(field instanceof Array)
-        return <span className={role}>{renderMathList(field, renderer)}</span>;
+        return <span className={role}>
+            {field.map((item) => item.render(renderer))}
+        </span>;
 
-    return field.render(renderer);
-}
-
-export interface Renderer<T>{
-    (item: T, role: string): JSX.Element
-}
-
-export interface Renderable<T>{
-    render(expander: Renderer<T>): JSX.Element;
+    return field.render(renderer, role);
 }
 
 /**
@@ -93,23 +83,20 @@ export class BaseAtom<T=never> implements Renderable<T>{
         this.nucleus = nucleus;
     }
 
-    render(renderer: Renderer<T>): JSX.Element {
-        let className = this.kind;
-        if(this.size){
-            className += " " + this.size;
-        }
-        if(this.variant){
-            className += " variant-" + this.variant;
-        }
+    render(renderer: RenderState<T>, role?: string): ReactElement<any> {
+        let classes = [this.kind];
+        if(this.size)    classes.push(this.size);
+        if(this.variant) classes.push("variant-" + this.variant);
+        if(role)         classes.push(role);
 
         let subsup = [];
-        if(this.sub) subsup.push(renderField("sub", this.sub, renderer));
-        if(this.sup) subsup.push(renderField("sup", this.sup, renderer));
+        if(this.sub) subsup.push(render("sub", this.sub, renderer));
+        if(this.sup) subsup.push(render("sup", this.sup, renderer));
 
         if(subsup.length == 0){
-            return <span className={className}>{this.nucleus}</span>;
+            return <span className={classes.join(" ")}>{this.nucleus}</span>;
         }else {
-            return <span className={className}>
+            return <span className={classes.join(" ")}>
                 <span className="nucleus">{this.nucleus}</span>
                 <span className="subsup">{subsup}</span>
             </span>;
@@ -118,7 +105,7 @@ export class BaseAtom<T=never> implements Renderable<T>{
 }
 
 export type Atom<T=never>
-    = Hole<T> | OrdPunct<T> | Op<T> | BinRel<T> | Fence<T> | Dec<T>;
+    = Augmented<T> | OrdPunct<T> | Op<T> | BinRel<T> | Fence<T> | Dec<T>;
 
 /**
  * Represents an ordinary atom, like an identifier.
@@ -142,10 +129,13 @@ export class Op<T=never> extends BaseAtom<T>{
         this.inner = inner;
     }
 
-    render(renderer: Renderer<T>): JSX.Element{
-        return <span className="op-wrap">
+    render(renderer: RenderState<T>, role?: string): JSX.Element{
+        let classes = ["op-wrap"];
+        if(role) classes.push(role);
+
+        return <span className={classes.join(" ")}>
             {super.render(renderer)}
-            {renderField("inner", this.inner, renderer)}
+            {render("inner", this.inner, renderer)}
         </span>;
     }
 }
@@ -166,11 +156,14 @@ export class BinRel<T=never> extends BaseAtom<T>{
         this.right = right;
     }
 
-    render(renderer: Renderer<T>): JSX.Element{
-        return <span className={this.kind + "-wrap"}>
-            {renderField("left", this.left, renderer)}
+    render(renderer: RenderState<T>, role?: string): JSX.Element{
+        let classes = [this.kind + "-wrap"];
+        if(role) classes.push(role);
+
+        return <span className={classes.join(" ")}>
+            {render("left", this.left, renderer)}
             {super.render(renderer)}
-            {renderField("right", this.right, renderer)}
+            {render("right", this.right, renderer)}
         </span>;
     }
 }
@@ -193,10 +186,13 @@ export class Fence<T=never> implements Renderable<T>{
         this.inner = inner;
     }
 
-    render(renderer: Renderer<T>): JSX.Element{
-        return <span className="fenced">
+    render(renderer: RenderState<T>, role?: string): JSX.Element{
+        let classes = ["fenced"];
+        if(role) classes.push(role);
+
+        return <span className={classes.join(" ")}>
             <span className="open">{this.open}</span>
-            {renderField("inner", this.inner, renderer)}
+            {render("inner", this.inner, renderer)}
             <span className="close">{this.close}</span>
         </span>;
     }
@@ -217,7 +213,7 @@ export class Dec<T=never> implements Renderable<T>{
         this.nucleus = nucleus;
     }
 
-    render(renderer: Renderer<T>): JSX.Element {
+    render(renderer: RenderState<T>, role?: string): JSX.Element {
         return <span>TODO Dec {this.kind}</span>
     }
 }
