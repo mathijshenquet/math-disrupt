@@ -3,9 +3,8 @@
  * @module presentation/builder
  */
 
-import {BinRel, Fence, Field, Op, OrdPunct} from "./index";
-import {Hole, Options, SubSup} from "./atoms";
-import {Cursor, Selector} from "../nominal/navigate";
+import {Hole, Options, SubSup, BinRel, Fence, Field, Op, OrdPunct} from "./markup";
+import {Selector} from "../nominal/navigate";
 
 /**
  * We use this class to conveniently build MathLists using the append

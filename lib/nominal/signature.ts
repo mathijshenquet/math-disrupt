@@ -14,9 +14,8 @@
  * @module nominal/signature
  */
 
-import {Hole} from "../presentation/atoms";
-import {Atom, Field} from "../presentation/general";
-import {Builder} from "../presentation/builder";
+import {Hole, Atom, Field} from "../presentation/markup";
+import {Builder} from "../presentation/builder"
 import {Template} from "./template";
 
 /**

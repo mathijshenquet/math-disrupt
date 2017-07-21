@@ -1,7 +1,6 @@
 
 
-import {Field} from "../presentation/general";
-import {children, Hole} from "../presentation/atoms";
+import {children, Hole, Field} from "../presentation/markup";
 import {Selector} from "./navigate";
 import {Term} from "./terms";
 

@@ -15,8 +15,8 @@ signature.define("d", ["string"], "term");
 signature.define("int",
     ["term", "term", new Binder<"string", "term">("string", "term")], "term",
     Builder.op("∫", [
-        Builder.hole([2,"term"]),
-        Builder.op("d", Builder.hole([2,"name"]))
+        Builder.hole([2,"term"], ["term"]),
+        Builder.op("d", Builder.ord(Builder.hole([2, "name"],["name"])))
     ], {
         size: "integral",
         sub: Builder.hole([0]),

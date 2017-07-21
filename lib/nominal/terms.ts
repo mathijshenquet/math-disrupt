@@ -16,7 +16,7 @@
 
 import * as signature from "./signature";
 import {Cursor, CursorChange, Movement, Selector} from "./navigate";
-import {Field} from "../presentation/general";
+import {Field} from "../presentation/markup";
 import {Builder} from "../presentation/builder";
 import {Template} from "./template";
 
