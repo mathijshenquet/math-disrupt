@@ -16,6 +16,19 @@
  * @module lib/presentation/data
  */
 
-export * from "./general";
-export * from "./atoms";
-export * from "./renderable";
+import {Atom} from "./atoms";
+export {Atom} from "./atoms";
+
+/**
+ * The basic structural element of presentational math is the MathList.
+ * This concept is taken from [TeXbook, page 157]. And is similar to
+ * the MathML <mrow> see [MathML, 3.3.1].
+ */
+export type MathList = Array<Atom>;
+
+/**
+ * A field is an TeX notion, an TeX atom contains a nucleus, sub- and supscript
+ * Field all of which are empty, contain a symbol or a MathList. Empty will
+ * be represented by the absence of a field (see below).
+ */
+export type Field = string | Atom | MathList;

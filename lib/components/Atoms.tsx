@@ -3,34 +3,39 @@
  */
 
 import * as React from "react";
-import {PureComponent, ReactElement, ReactNode} from "react";
-import {Augmented, render} from "../presentation";
+import {PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/terms";
-import {RenderState} from "../presentation/expandable";
-import {Field} from "../presentation/markup";
-
-let termRenderer: RenderState<Term> = (term: Augmented<Term>, role?: string) =>
-    <MathTerm term={term.augmentation} role={role} contents={term.contents} />;
+import {Cursor, Selector} from "../nominal/navigate";
+import {render} from "../presentation/renderable";
 
 export interface MathTermProps  {
     term: Term,
-    role?: string,
-    contents: Field<Term>,
+    caret?: Cursor,
+    roles: Array<string>,
 }
 
 export class MathTerm extends PureComponent<MathTermProps, {}> {
     render(): ReactElement<any> {
-        return render(this.props.role, this.props.contents, termRenderer);
+        let term = this.props.term, caret = this.props.caret;
+
+        let $ = (selector: Selector, roles: Array<string>) => {
+            let newCaret = term.contractAlong(caret, selector);
+            if(newCaret != undefined) roles.push("cursor");
+            return <MathTerm term={term.select(selector)} caret={newCaret} roles={roles} />
+        };
+
+        return render(this.props.roles, term.template, $);
     }
 }
 
 export interface MathBlockProps  {
     term: Term,
-    caret?: Array<number>
+    caret?: Cursor
 }
 
 export class MathInline extends PureComponent<MathBlockProps, {}> {
     render(): ReactElement<any> {
-        return termRenderer(this.props.term.expand(), "MathRoot");
+        let term = this.props.term, caret = this.props.caret;
+        return <MathTerm term={term} caret={caret} roles={["MathRoot"]} />;
     }
 }

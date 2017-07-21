@@ -14,9 +14,10 @@
  * @module nominal/signature
  */
 
-import {Builder, Expandable} from "../presentation/index";
-import {Term} from "./terms";
-import * as terms from "./terms";
+import {Hole} from "../presentation/atoms";
+import {Atom, Field} from "../presentation/general";
+import {Builder} from "../presentation/builder";
+import {Template} from "./template";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
@@ -28,12 +29,12 @@ import * as terms from "./terms";
  * variables (In [ProgMLTT] it is remarked, in section 4.2, that only such first
  * order variables are needed for the type theory).
  */
-export type Sort<N, D> = N | D | Bind<N, D> | Op<N, D>;
+export type Sort<N, D> = N | D | Binder<N, D> | Former<N, D>;
 
 /**
  * Represents a bound name in a term of sort D.
  */
-export class Bind<N=any, D=any, A=any> {
+export class Binder<N=any, D=any, A=any> {
     name: N;
     term: D;
 
@@ -41,61 +42,39 @@ export class Bind<N=any, D=any, A=any> {
         this.name = name;
         this.term = term;
     }
-
-    notation(builder: Builder<Term<A>>, name: A, term: Term<A>){
-        builder.ord(name.toString());
-        builder.punct(".");
-
-        if((term instanceof terms.Form) || (term instanceof terms.Bind))
-            builder.item(term.expand());
-        else
-            builder.ord(term.toString());
-    }
 }
 
-export interface Notation<A>{
-    (builder: Builder<Term<A>>, head: A, leaves: Term<A>[]): void
-}
-
-export class Op<N=any, D=any, A=any> {
-    op: string;
+export class Former<N=any, D=any> {
     dom: Sort<N, D>[];
     cod: D;
-    customNotation?: Notation<A>;
+    template: Field;
 
-    constructor(op: string, dom: Sort<N, D>[], cod: D, customNotation?: Notation<A>) {
-        this.op = op;
+    constructor(dom: Array<Sort<N, D>>, cod: D, template?: Field) {
         this.dom = dom;
         this.cod = cod;
-        this.customNotation = customNotation;
+
+        if(template) this.template = template;
+        else this.template = this.standardTemplate();
     }
 
-    notation(builder: Builder<Term<A>>, head: A, leaves: Term<A>[]){
-        if(this.customNotation)
-            return this.customNotation(builder, head, leaves);
-
-        builder.symbol(head.toString());
-        builder.push();
-        for(let i = 0; i < leaves.length; i++) {
-            if (i != 0) builder.punct(",");
-
-            let leaf = leaves[i];
-            builder.item(leaf.expand());
-        }
-        let inner = builder.pop();
-        builder.fence("(", inner, ")");
+    private standardTemplate(): Field {
+        let args = Template.intersperse<Atom>(
+            this.dom.map((_, i): Hole => Builder.hole([i])),
+            Builder.punct(",")
+        );
+        return [Builder.hole(["head"], ["variant-normal"]), Builder.fence("(", args, ")")];
     }
 }
 
-export class Signature<N=any, D=any, A=any> {
-    ops: { [s: string]: Op<N, D, A> };
+export class Signature<N=any, D=any> {
+    formers: { [s: string]: Former<N, D> };
 
     constructor(){
-        this.ops = {};
+        this.formers = {};
     }
 
-    define(op: string, dom: Sort<N, D>[], cod: D, customNotation?: Notation<A>) {
-        this.ops[op] = new Op(op, dom, cod, customNotation);
-        return this.ops[op];
+    define(head: string, dom: Sort<N, D>[], cod: D, template?: Field) {
+        this.formers[head] = new Former(dom, cod, template);
+        return this.formers[head];
     }
 }

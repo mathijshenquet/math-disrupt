@@ -13,7 +13,7 @@
 
 import {Signature} from "./signature";
 import * as signature from "./signature";
-import {Atom, Bind, Term, Form} from "./terms";
+import {Name, Bind, Term, Form} from "./terms";
 
 /**
  * A name sorting for the countably infinite set A of atomic names is given by a
@@ -21,34 +21,34 @@ import {Atom, Bind, Term, Form} from "./terms";
  *
  * See [NomSets] definition 4.26
  */
-export interface Sorting<A, N> {
-    (atom: A): N;
+export interface Sorting<N> {
+    (atom: string): N;
 }
 
 /**
  * This is supposed to implement the (analogue of the) inductive rules
  * from [NomSets] definition 8.2.
  */
-export class Algebra<A, N, D> {
+export class Algebra<N, D> {
     signature: Signature<N, D>;
-    sorting: Sorting<A, N>;
+    sorting: Sorting<N>;
 
-    constructor(signature: Signature<N, D>, sorting: Sorting<A, N>) {
+    constructor(signature: Signature<N, D>, sorting: Sorting<N>) {
         this.signature = signature;
         this.sorting = sorting;
     }
 
-    op(head: A & string, ...leaves: (Term<A>)[]): Form<A> {
-        let cell = this.signature.ops[head];
+    op(head: string, ...leaves: Array<Term>): Form {
+        let cell = this.signature.formers[head];
         // TODO typechecking
-        return new Form(head, leaves, cell);
+        return new Form(this.atom(head), leaves, cell);
     }
 
-    bind(name: A, term: Form<A>): Bind<A> {
-        return new Bind(new Atom(name), term, new signature.Bind(name, term.sort));
+    bind(name: string, term: Form): Bind {
+        return new Bind(this.atom(name), term, new signature.Binder(name, term.sort));
     }
 
-    atom(name: A){
-        return new Atom(name);
+    atom(name: string){
+        return new Name(name, this.sorting(name));
     }
 }
