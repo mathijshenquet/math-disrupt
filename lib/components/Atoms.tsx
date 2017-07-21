@@ -6,7 +6,11 @@ import * as React from "react";
 import {PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/terms";
 import {Cursor, Selector} from "../nominal/navigate";
-import {Field} from "../presentation/markup";
+import {Atom, Field} from "../presentation/markup";
+
+export interface HoleExpander{
+    (selector: Selector, role: Array<string>): ReactElement<any>;
+}
 
 export interface MathTermProps  {
     term: Term,
@@ -16,7 +20,9 @@ export interface MathTermProps  {
 
 export class MathTerm extends PureComponent<MathTermProps, {}> {
     render(): ReactElement<any> {
-        let term = this.props.term, caret = this.props.caret;
+        const term = this.props.term;
+        const caret = this.props.caret;
+        const roles = this.props.roles;
 
         let $ = (selector: Selector, roles: Array<string>) => {
             let newCaret = term.contractAlong(caret, selector);
@@ -27,12 +33,36 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
             return <MathTerm term={term.select(selector)} caret={newCaret} roles={roles} />
         };
 
-        return render(this.props.roles, term.template, $);
+        const template = term.template;
+
+        if(typeof template == "string" && caret){
+            let pos: number = caret.head;
+            return <span className={roles.join(" ")}>
+                <span key="left">{template.slice(0, pos)}</span>
+                <span key="caret" className="caret" />
+                <span key="right">{template.slice(pos)}</span>
+            </span>;
+        }else{
+            return render(roles, template, $);
+        }
     }
 }
 
-export interface HoleExpander{
-    (selector: Selector, role: Array<string>): ReactElement<any>;
+function render(roles: Array<string>, template: Field, $: HoleExpander): ReactElement<any>{
+    if(template instanceof Array) {
+        if(template.length == 1){
+            return renderAtom(roles, template[0], $);
+        }else {
+            return <span className={roles.join(" ")}>
+                {template.map((item) => renderAtom([], item, $))}
+            </span>;
+        }
+    }
+
+    if(typeof template === "string")
+        return <span className={roles.join(" ")}>{template}</span>;
+
+    return renderAtom(roles, template, $);
 }
 
 function renderBase(roles: Array<string>, $: HoleExpander): ReactElement<any> {
@@ -54,57 +84,43 @@ function renderBase(roles: Array<string>, $: HoleExpander): ReactElement<any> {
     }
 }
 
-export function render(roles: Array<string>, field: Field, $: HoleExpander): ReactElement<any> {
-    if(field instanceof Array) {
-        if(field.length == 1){
-            field = field[0];
-        }else {
-            return <span className={roles.join(" ")}>
-                {field.map((item) => render([], item, $))}
-            </span>;
-        }
-    }
-
-    if(typeof field === "string")
-        return <span className={roles.join(" ")}>{field}</span>;
-
-    switch(field.kind) {
+function renderAtom(roles: Array<string>, atom: Atom, $: HoleExpander): ReactElement<any> {
+    switch(atom.kind) {
         case "ord":
-            return renderBase.call(field, roles, $);
+            return renderBase.call(atom, roles, $);
 
         case "hole":
-            Array.prototype.push.apply(roles, field.roles);
-            return $(field.selector, roles);
+            Array.prototype.push.apply(roles, atom.roles);
+            return $(atom.selector, roles);
 
         case "op":
             roles.push("op-wrap");
             return <span className={roles.join(" ")}>
-                {renderBase.call(field, [], $)}
-                {render(["inner"], field.inner, $)}
+                {renderBase.call(atom, [], $)}
+                {render(["inner"], atom.inner, $)}
             </span>;
 
         case "bin":
         case "rel":
-            roles.push(`${field.kind}-wrap`);
+            roles.push(`${atom.kind}-wrap`);
             return <span className={roles.join(" ")}>
-                {render(["left"], field.left, $)}
-                {renderBase.call(field, ["inner"], $)}
-                {render(["right"], field.right, $)}
+                {render(["left"], atom.left, $)}
+                {renderBase.call(atom, ["inner"], $)}
+                {render(["right"], atom.right, $)}
             </span>;
 
         case "fence":
             roles.push("fenced");
             return <span className={roles.join(" ")}>
-                    <span className="open">{field.open}</span>
-                {render(["inner"], field.inner, $)}
-                <span className="close">{field.close}</span>
+                    <span className="open">{atom.open}</span>
+                {render(["inner"], atom.inner, $)}
+                <span className="close">{atom.close}</span>
             </span>;
 
         default:
-            return <span>TODO {field.kind}</span>
+            return <span className="error">TODO {atom.kind}</span>
     }
 }
-
 
 export interface MathBlockProps  {
     term: Term,
