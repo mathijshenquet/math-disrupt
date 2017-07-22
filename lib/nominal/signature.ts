@@ -14,9 +14,10 @@
  * @module nominal/signature
  */
 
-import {Hole, Atom, Field, MathList} from "../presentation/markup";
+import {Atom, Field, MathList} from "../presentation/markup";
 import {Builder} from "../presentation/builder"
-import {Template} from "./template";
+import {TemplateHelper} from "./template";
+import {Hole, Template} from "../presentation/template";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
@@ -46,9 +47,9 @@ export class Binder<N=any, D=any, A=any> {
 export class Former<N=any, D=any> {
     dom: Sort<N, D>[];
     cod: D;
-    template: Field;
+    template: Template;
 
-    constructor(dom: Array<Sort<N, D>>, cod: D, template?: Field) {
+    constructor(dom: Array<Sort<N, D>>, cod: D, template?: Template) {
         this.dom = dom;
         this.cod = cod;
 
@@ -56,8 +57,8 @@ export class Former<N=any, D=any> {
         else this.template = this.standardTemplate();
     }
 
-    private standardTemplate(): Field {
-        let args = Template.intersperse<Atom | Hole>(
+    private standardTemplate(): Template {
+        let args: Array<Atom<Hole> | Hole> = TemplateHelper.intersperse<Atom<Hole> | Hole>(
             this.dom.map((_, i): Hole => Builder.hole([i])),
             Builder.punct(",")
         );
@@ -72,7 +73,7 @@ export class Signature<N=any, D=any> {
         this.formers = {};
     }
 
-    define(head: string, dom: Sort<N, D>[], cod: D, template?: Field) {
+    define(head: string, dom: Sort<N, D>[], cod: D, template?: Template) {
         this.formers[head] = new Former(dom, cod, template);
         return this.formers[head];
     }

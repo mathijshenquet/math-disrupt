@@ -7,9 +7,10 @@ import {PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/terms";
 import {Cursor, Selector} from "../nominal/navigate";
 import {
-    Atom, Field, SubSup, Options, Hole,
+    Atom, Field, SubSup, Options,
     BaseAtom
 } from "../presentation/markup";
+import {Hole, Template} from "../presentation/template";
 
 export interface HoleExpander{
     (selector: Selector, role: Array<string>): ReactElement<any>;
@@ -51,7 +52,7 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
     }
 }
 
-function render(roles: Array<string>, template: Field, $: HoleExpander): ReactElement<any>{
+function render(roles: Array<string>, template: Template, $: HoleExpander): ReactElement<any>{
     if(template instanceof Array) {
         if(template.length == 1){
             return renderAtom(roles, template[0], $);
@@ -68,7 +69,7 @@ function render(roles: Array<string>, template: Field, $: HoleExpander): ReactEl
     return renderAtom(roles, template, $);
 }
 
-function renderBase(roles: Array<string>, atom: BaseAtom, $: HoleExpander): ReactElement<any> {
+function renderBase(roles: Array<string>, atom: BaseAtom<Hole>, $: HoleExpander): ReactElement<any> {
     roles.push(atom.kind);
     if (atom.size) roles.push(atom.size);
     if (atom.variant) roles.push("variant-" + atom.variant);
@@ -87,7 +88,7 @@ function renderBase(roles: Array<string>, atom: BaseAtom, $: HoleExpander): Reac
     }
 }
 
-function renderAtom(roles: Array<string>, atom: Atom | Hole, $: HoleExpander): ReactElement<any> {
+function renderAtom(roles: Array<string>, atom: Atom<Hole> | Hole, $: HoleExpander): ReactElement<any> {
     switch(atom.kind) {
         case "hole":
             Array.prototype.push.apply(roles, atom.roles);

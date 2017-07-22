@@ -1,15 +1,16 @@
 
 
-import {children, Hole, Field} from "../presentation/markup";
+import {Atom, children, Field} from "../presentation/markup";
 import {Selector} from "./navigate";
 import {Term} from "./terms";
+import {Template} from "../presentation/template";
 
 function flatten<T>(arrays: Array<Array<T>>): Array<T> {
     let seed: T[] = [];
     return seed.concat(...arrays);
 }
 
-export class Template{
+export class TemplateHelper{
     private arity: number;
     private template: Field;
 
@@ -27,17 +28,17 @@ export class Template{
         return result;
     }
 
-    static computeHoles(template: Field): Array<Selector> {
+    static computeHoles(template: Template): Array<Selector> {
         if(typeof template == "string") // its a symbol
             return [];
 
         if(template instanceof Array) // its a math list
-            return flatten(template.map(Template.computeHoles));
+            return flatten(template.map(TemplateHelper.computeHoles));
 
         if(template.kind == "hole")
             return [template.selector];
 
-        let holes = children(template).map(Template.computeHoles);
+        let holes = children(<Atom>template).map(TemplateHelper.computeHoles);
         return flatten(holes);
     }
 }

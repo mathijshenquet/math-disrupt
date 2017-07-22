@@ -16,9 +16,9 @@
 
 import * as signature from "./signature";
 import {Cursor, CursorChange, Movement, Selector} from "./navigate";
-import {Field} from "../presentation/markup";
 import {Builder} from "../presentation/builder";
-import {Template} from "./template";
+import {TemplateHelper} from "./template";
+import {Template} from "../presentation/template";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
@@ -27,14 +27,14 @@ export type Term = Name | Bind | Form | BaseTerm
 
 export abstract class BaseTerm {
     children: Array<Term>;
-    template: Field;
+    template: Template;
 
-    constructor(template: Field){
+    constructor(template: Template){
         this.template = template;
     }
 
     protected computeChildren(){
-        this.children = Template.computeHoles(this.template).map(this.select.bind(this));
+        this.children = TemplateHelper.computeHoles(this.template).map(this.select.bind(this));
     }
 
     /**

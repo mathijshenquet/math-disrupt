@@ -21,22 +21,21 @@
  * This concept is taken from [TeXbook, page 157]. And is similar to
  * the MathML <mrow> see [MathML, 3.3.1].
  */
-export type MathList = Array<Atom | Hole>;
+export type MathList<H=never> = Array<Atom<H> | H>;
 
 /**
  * A field is an TeX notion, an TeX atom contains a nucleus, sub- and supscript
  * Field all of which are empty, contain a symbol or a MathList. Empty will
  * be represented by the absence of a field (see below).
  */
-export type Field = string | Atom | Hole | MathList;
+export type Field<H=never> = string | Atom<H> | H | MathList<H>;
 
 import {FontVariant} from "./misc";
-import {Selector} from "../nominal/navigate";
 
 /**
  * Atom
  */
-export type Atom = OrdPunct | Op | BinRel | Fence | Dec;
+export type Atom<H=never> = OrdPunct<H> | Op<H> | BinRel<H> | Fence<H> | Dec<H>;
 
 export function children(atom: Atom & SubSup): Array<Field>{
     let subsup = [];
@@ -49,9 +48,6 @@ export function children(atom: Atom & SubSup): Array<Field>{
             return [atom.nucleus, ...subsup];
 
         /*
-        case "hole":
-            return [];
-
         case "op":
             return [atom.nucleus, ...subsup, atom.inner];
         */
@@ -68,9 +64,9 @@ export function children(atom: Atom & SubSup): Array<Field>{
     }
 }
 
-export interface SubSup {
-    sub?: Field,
-    sup?: Field,
+export interface SubSup<H=never> {
+    sub?: Field<H>,
+    sup?: Field<H>,
 }
 
 export interface Options {
@@ -79,51 +75,45 @@ export interface Options {
     size?: string,
 }
 
-export interface Hole {
-    kind: "hole";
-    selector: Selector;
-    roles: Array<string>;
-}
-
-export interface BaseAtom extends SubSup, Options {
+export interface BaseAtom<H=never> extends SubSup<H>, Options {
     kind: string,
-    nucleus: Field
+    nucleus: Field<H>
 }
 
 /**
  * Represents an ordinary atom, like an identifier.
  * Or a punctuation like . or ,.
  */
-export interface OrdPunct extends BaseAtom{
+export interface OrdPunct<H=never> extends BaseAtom<H>{
     kind: "ord" | "punct";
-    nucleus: Field;
+    nucleus: Field<H>;
 }
 
 /**
  * Represents a unary operator like \int, \sum or \prod.
  */
-export interface Op extends BaseAtom{
+export interface Op<H=never> extends BaseAtom<H>{
     kind: "op";
-    nucleus: Field;
+    nucleus: Field<H>;
 }
 
 /**
  * Represents a binary operator like + or -, or a binary relation
  * like = and <
  */
-export interface BinRel extends BaseAtom{
+export interface BinRel<H=never> extends BaseAtom<H>{
     kind: "bin" | "rel";
-    left: Field;
-    nucleus: Field;
-    right: Field;
+    left: Field<H>;
+    nucleus: Field<H>;
+    right: Field<H>;
 }
 
 /**
  * represents a matching pair of braces.
  */
-export interface Fence extends Options{
+export interface Fence<H=never> extends Options, SubSup{
     kind: "fence";
-    inner: Field;
+    inner: Field<H>;
     open: string;
     close: string;
 }
@@ -131,7 +121,7 @@ export interface Fence extends Options{
 /**
  * Represents a decorated item: \over \under or \rad.
  */
-export interface Dec extends BaseAtom{
+export interface Dec<H=never> extends BaseAtom<H>{
     kind: "over" | "under" | "rad";
-    nucleus: Field;
+    nucleus: Field<H>;
 }
