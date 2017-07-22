@@ -27,8 +27,8 @@ export class Builder{
         return Object.assign(punct, options);
     }
 
-    static op(nucleus: Field, inner: Field, options: Options & SubSup = {}): Op {
-        let op: Op = {kind: "op", nucleus, inner};
+    static op(nucleus: Field, options: Options & SubSup = {}): Op {
+        let op: Op = {kind: "op", nucleus};
         return Object.assign(op, options);
     }
 

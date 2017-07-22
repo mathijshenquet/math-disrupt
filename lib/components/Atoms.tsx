@@ -93,15 +93,14 @@ function renderAtom(roles: Array<string>, atom: Atom | Hole, $: HoleExpander): R
             Array.prototype.push.apply(roles, atom.roles);
             return $(atom.selector, roles);
 
-        case "ord":
-            return renderBase(roles, atom, $);
-
+        /*
         case "op":
             roles.push("op-wrap");
             return <span className={roles.join(" ")}>
-                {renderBase([], atom, $)}
+                {return renderBase(roles, atom, $)}
                 {render(["inner"], atom.inner, $)}
             </span>;
+        */
 
         case "bin":
         case "rel":
@@ -121,7 +120,7 @@ function renderAtom(roles: Array<string>, atom: Atom | Hole, $: HoleExpander): R
             </span>;
 
         default:
-            return <span className="error">TODO {atom.kind}</span>
+            return renderBase(roles, atom, $);
     }
 }
 

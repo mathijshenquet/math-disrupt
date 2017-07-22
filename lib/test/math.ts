@@ -14,14 +14,16 @@ signature.define("sin", ["term"], "term");
 signature.define("d", ["string"], "term");
 signature.define("int",
     ["term", "term", new Binder<"string", "term">("string", "term")], "term",
-    Builder.op("∫", [
+    [
+        Builder.op("∫", {
+            size: "integral",
+            sub: Builder.hole([0]),
+            sup: Builder.hole([1])
+        }),
         Builder.hole([2,"term"], ["term"]),
-        Builder.op("d", Builder.ord(Builder.hole([2, "name"],["name"])))
-    ], {
-        size: "integral",
-        sub: Builder.hole([0]),
-        sup: Builder.hole([1])
-    })
+        Builder.op("d"),
+        Builder.ord(Builder.hole([2, "name"],["name"]))
+    ]
 );
 
 export const $ = new Algebra(signature, mathSorting);

@@ -45,13 +45,16 @@ export function children(atom: Atom & SubSup): Array<Field>{
 
     switch(atom.kind) {
         case "ord":
+        case "op":
             return [atom.nucleus, ...subsup];
 
-        /*case "hole":
-            return [];*/
+        /*
+        case "hole":
+            return [];
 
         case "op":
             return [atom.nucleus, ...subsup, atom.inner];
+        */
 
         case "bin":
         case "rel":
@@ -76,15 +79,15 @@ export interface Options {
     size?: string,
 }
 
-export interface BaseAtom extends SubSup, Options {
-    kind: string,
-    nucleus: Field
-}
-
 export interface Hole {
     kind: "hole";
     selector: Selector;
     roles: Array<string>;
+}
+
+export interface BaseAtom extends SubSup, Options {
+    kind: string,
+    nucleus: Field
 }
 
 /**
@@ -102,7 +105,6 @@ export interface OrdPunct extends BaseAtom{
 export interface Op extends BaseAtom{
     kind: "op";
     nucleus: Field;
-    inner: Field;
 }
 
 /**
