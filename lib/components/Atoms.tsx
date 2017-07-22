@@ -6,7 +6,10 @@ import * as React from "react";
 import {PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/terms";
 import {Cursor, Selector} from "../nominal/navigate";
-import {Atom, Field} from "../presentation/markup";
+import {
+    Atom, Field, SubSup, Options, Hole,
+    BaseAtom
+} from "../presentation/markup";
 
 export interface HoleExpander{
     (selector: Selector, role: Array<string>): ReactElement<any>;
@@ -65,38 +68,38 @@ function render(roles: Array<string>, template: Field, $: HoleExpander): ReactEl
     return renderAtom(roles, template, $);
 }
 
-function renderBase(roles: Array<string>, $: HoleExpander): ReactElement<any> {
-    roles.push(this.kind);
-    if (this.size) roles.push(this.size);
-    if (this.variant) roles.push("variant-" + this.variant);
+function renderBase(roles: Array<string>, atom: BaseAtom, $: HoleExpander): ReactElement<any> {
+    roles.push(atom.kind);
+    if (atom.size) roles.push(atom.size);
+    if (atom.variant) roles.push("variant-" + atom.variant);
 
     let subsup = [];
-    if (this.sub) subsup.push(render(["sub"], this.sub, $));
-    if (this.sup) subsup.push(render(["sup"], this.sup, $));
+    if (atom.sub) subsup.push(render(["sub"], atom.sub, $));
+    if (atom.sup) subsup.push(render(["sup"], atom.sup, $));
 
     if (subsup.length == 0) {
-        return render(roles, this.nucleus, $);
+        return render(roles, atom.nucleus, $);
     } else {
         return <span className={roles.join(" ")}>
-            {render(["nucleus"], this.nucleus, $)}
+            {render(["nucleus"], atom.nucleus, $)}
             <span className="subsup">{subsup}</span>
         </span>;
     }
 }
 
-function renderAtom(roles: Array<string>, atom: Atom, $: HoleExpander): ReactElement<any> {
+function renderAtom(roles: Array<string>, atom: Atom | Hole, $: HoleExpander): ReactElement<any> {
     switch(atom.kind) {
-        case "ord":
-            return renderBase.call(atom, roles, $);
-
         case "hole":
             Array.prototype.push.apply(roles, atom.roles);
             return $(atom.selector, roles);
 
+        case "ord":
+            return renderBase(roles, atom, $);
+
         case "op":
             roles.push("op-wrap");
             return <span className={roles.join(" ")}>
-                {renderBase.call(atom, [], $)}
+                {renderBase([], atom, $)}
                 {render(["inner"], atom.inner, $)}
             </span>;
 
@@ -105,7 +108,7 @@ function renderAtom(roles: Array<string>, atom: Atom, $: HoleExpander): ReactEle
             roles.push(`${atom.kind}-wrap`);
             return <span className={roles.join(" ")}>
                 {render(["left"], atom.left, $)}
-                {renderBase.call(atom, ["inner"], $)}
+                {renderBase(["inner"], atom, $)}
                 {render(["right"], atom.right, $)}
             </span>;
 

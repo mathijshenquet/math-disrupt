@@ -21,13 +21,6 @@ import {Builder} from "../presentation/builder";
 import {Template} from "./template";
 
 /**
- * We will expand the nominal syntax one layer at the time. This interface
- * represents this ability. It states that an expandable thing is expandable
- * into a MathList which will contain expandable holes.
- */
-
-
-/**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
  */
 export type Term = Name | Bind | Form | BaseTerm
@@ -40,7 +33,7 @@ export abstract class BaseTerm {
         this.template = template;
     }
 
-    computeChildren(){
+    protected computeChildren(){
         this.children = Template.computeHoles(this.template).map(this.select.bind(this));
     }
 
@@ -59,16 +52,6 @@ export abstract class BaseTerm {
 
         return child.navigate(cursor.tail);
     }
-
-    /*
-    select(cursor: Cursor | Array<number> | undefined): Term {
-        if(cursor instanceof Array) cursor = Cursor.fromArray(cursor);
-        if(cursor === undefined) return this;
-        let child: Term = this.children[cursor.head];
-        if(child === undefined) return this;
-
-        return child.select(cursor.tail);
-    }*/
 
     /**
      * Given a selector, returns the relevant child Term.
@@ -112,7 +95,11 @@ export abstract class BaseTerm {
         let change = Cursor.boundedChange(pos + movement, this.children.length);
         if(typeof change == "number") return change; // underflow or overflow
 
-        return new Cursor(change.head, this.children[change.head].enter(movement));
+        // We type the child as BaseTerm so that typescript recognises we use
+        // BaseTerm#enter.
+        let child: BaseTerm = this.children[change.head];
+        let tail = child.enter(movement);
+        return new Cursor(change.head, tail);
     }
 
     /**
@@ -137,7 +124,7 @@ export abstract class BaseTerm {
      * so `term` is visually the 3rd child node of `int`. This function computes
      * exactly that: given the cursor (which is presentational) [3, ...rest],
      * and the selector [0, "term"] it returns [...rest], and given [2, ..rest]
-     * it returnd undefined. Which are the cursors relative to the child `term`.
+     * it returned undefined. Which are the cursors relative to the child `term`.
      *
      * @param {Cursor} caret
      * @param {Selector} selector

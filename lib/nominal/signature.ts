@@ -14,7 +14,7 @@
  * @module nominal/signature
  */
 
-import {Hole, Atom, Field} from "../presentation/markup";
+import {Hole, Atom, Field, MathList} from "../presentation/markup";
 import {Builder} from "../presentation/builder"
 import {Template} from "./template";
 
@@ -57,7 +57,7 @@ export class Former<N=any, D=any> {
     }
 
     private standardTemplate(): Field {
-        let args = Template.intersperse<Atom>(
+        let args = Template.intersperse<Atom | Hole>(
             this.dom.map((_, i): Hole => Builder.hole([i])),
             Builder.punct(",")
         );

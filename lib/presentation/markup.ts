@@ -21,14 +21,14 @@
  * This concept is taken from [TeXbook, page 157]. And is similar to
  * the MathML <mrow> see [MathML, 3.3.1].
  */
-export type MathList = Array<Atom>;
+export type MathList = Array<Atom | Hole>;
 
 /**
  * A field is an TeX notion, an TeX atom contains a nucleus, sub- and supscript
  * Field all of which are empty, contain a symbol or a MathList. Empty will
  * be represented by the absence of a field (see below).
  */
-export type Field = string | Atom | MathList;
+export type Field = string | Atom | Hole | MathList;
 
 import {FontVariant} from "./misc";
 import {Selector} from "../nominal/navigate";
@@ -36,7 +36,7 @@ import {Selector} from "../nominal/navigate";
 /**
  * Atom
  */
-export type Atom = Hole | OrdPunct | Op | BinRel | Fence | Dec;
+export type Atom = OrdPunct | Op | BinRel | Fence | Dec;
 
 export function children(atom: Atom & SubSup): Array<Field>{
     let subsup = [];
@@ -47,8 +47,8 @@ export function children(atom: Atom & SubSup): Array<Field>{
         case "ord":
             return [atom.nucleus, ...subsup];
 
-        case "hole":
-            return [];
+        /*case "hole":
+            return [];*/
 
         case "op":
             return [atom.nucleus, ...subsup, atom.inner];
@@ -76,6 +76,11 @@ export interface Options {
     size?: string,
 }
 
+export interface BaseAtom extends SubSup, Options {
+    kind: string,
+    nucleus: Field
+}
+
 export interface Hole {
     kind: "hole";
     selector: Selector;
@@ -86,7 +91,7 @@ export interface Hole {
  * Represents an ordinary atom, like an identifier.
  * Or a punctuation like . or ,.
  */
-export interface OrdPunct extends Options{
+export interface OrdPunct extends BaseAtom{
     kind: "ord" | "punct";
     nucleus: Field;
 }
@@ -94,7 +99,7 @@ export interface OrdPunct extends Options{
 /**
  * Represents a unary operator like \int, \sum or \prod.
  */
-export interface Op extends Options{
+export interface Op extends BaseAtom{
     kind: "op";
     nucleus: Field;
     inner: Field;
@@ -104,7 +109,7 @@ export interface Op extends Options{
  * Represents a binary operator like + or -, or a binary relation
  * like = and <
  */
-export interface BinRel extends Options{
+export interface BinRel extends BaseAtom{
     kind: "bin" | "rel";
     left: Field;
     nucleus: Field;
@@ -124,7 +129,7 @@ export interface Fence extends Options{
 /**
  * Represents a decorated item: \over \under or \rad.
  */
-export interface Dec extends Options{
+export interface Dec extends BaseAtom{
     kind: "over" | "under" | "rad";
     nucleus: Field;
 }

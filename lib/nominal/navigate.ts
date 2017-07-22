@@ -4,6 +4,9 @@ export enum Movement {
     Right=+1
 }
 
+/**
+ * A selector is meant to specify a
+ */
 export type Selector = Array<number | string>;
 
 export class Cursor{
