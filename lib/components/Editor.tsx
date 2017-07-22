@@ -5,7 +5,7 @@
 import * as React from "react";
 import {KeyboardEvent, PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/terms";
-import {MathInline} from "./Atoms";
+import {MathInline} from "./containers";
 import {Cursor, Movement} from "../nominal/navigate";
 
 //export type Doc = Array<string | TermNode>;
@@ -56,27 +56,5 @@ export class Editor extends PureComponent<EditorProps, EditorState> {
         return <div className="editor" tabIndex={0} onKeyDown={this.keyDown.bind(this)}>
             <MathInline term={this.props.term} caret={this.state.caret} />
         </div>;
-    }
-}
-
-export interface TextFragmentProps  {
-    fragment: string,
-    caret?: Cursor
-}
-
-export class TextFragment extends PureComponent<TextFragmentProps, EditorState> {
-    render(): ReactElement<any> {
-        let fragment = this.props.fragment;
-        let caret;
-        if(this.props.caret) caret = this.props.caret.head;
-        if(caret && 0 <= caret && caret < fragment.length){
-            return <span>
-                <span key="left">{fragment.slice(0, caret)}</span>
-                <span key="caret" className="caret" />
-                <span key="right">{fragment.slice(caret)}</span>
-            </span>;
-        }else{
-            return <span>{fragment}</span>;
-        }
     }
 }
