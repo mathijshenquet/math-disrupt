@@ -47,11 +47,6 @@ export function children(atom: Atom & SubSup): Array<Field>{
         case "op":
             return [atom.nucleus, ...subsup];
 
-        /*
-        case "op":
-            return [atom.nucleus, ...subsup, atom.inner];
-        */
-
         case "bin":
         case "rel":
             return [atom.left, atom.nucleus, ...subsup, atom.right];

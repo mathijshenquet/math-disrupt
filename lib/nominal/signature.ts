@@ -16,7 +16,6 @@
 
 import {Atom, Field, MathList} from "../presentation/markup";
 import {Builder} from "../presentation/builder"
-import {TemplateHelper} from "./template";
 import {Hole, Template} from "../presentation/template";
 
 /**
@@ -58,10 +57,11 @@ export class Former<N=any, D=any> {
     }
 
     private standardTemplate(): Template {
-        let args: Array<Atom<Hole> | Hole> = TemplateHelper.intersperse<Atom<Hole> | Hole>(
-            this.dom.map((_, i): Hole => Builder.hole([i])),
-            Builder.punct(",")
-        );
+        const args = [];
+        for(let i = 0; i < this.dom.length; i++) {
+            if (i != 0) args.push(Builder.punct(","));
+            args.push(Builder.hole([i]));
+        }
         return [Builder.hole(["head"], ["variant-normal"]), Builder.fence("(", args, ")")];
     }
 }

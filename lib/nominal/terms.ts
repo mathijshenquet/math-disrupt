@@ -17,8 +17,7 @@
 import * as signature from "./signature";
 import {Cursor, CursorChange, Movement, Selector} from "./navigate";
 import {Builder} from "../presentation/builder";
-import {TemplateHelper} from "./template";
-import {Template} from "../presentation/template";
+import {computeHoles, Template} from "../presentation/template";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
@@ -34,7 +33,7 @@ export abstract class BaseTerm {
     }
 
     protected computeChildren(){
-        this.children = TemplateHelper.computeHoles(this.template).map(this.select.bind(this));
+        this.children = computeHoles(this.template).map(this.select.bind(this));
     }
 
     /**
