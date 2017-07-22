@@ -7,7 +7,7 @@ import {PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/terms";
 import {Cursor, Selector} from "../nominal/navigate";
 import {
-    Atom, Field, SubSup, Options,
+    Atom,
     BaseAtom
 } from "../presentation/markup";
 import {Hole, Template} from "../presentation/template";

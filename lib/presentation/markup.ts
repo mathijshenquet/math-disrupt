@@ -104,7 +104,7 @@ export interface BinRel<H=never> extends BaseAtom<H>{
 }
 
 /**
- * represents a matching pair of braces.
+ * Represents a matching pair of braces.
  */
 export interface Fence<H=never> extends Options, SubSup{
     kind: "fence";

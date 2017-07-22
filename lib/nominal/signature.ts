@@ -14,9 +14,8 @@
  * @module nominal/signature
  */
 
-import {Atom, Field, MathList} from "../presentation/markup";
 import {Builder} from "../presentation/builder"
-import {Hole, Template} from "../presentation/template";
+import {Template} from "../presentation/template";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
