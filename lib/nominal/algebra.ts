@@ -11,7 +11,7 @@
  * @module nominal/algebra
  */
 
-import {Name, Bind, Term, Form} from "./terms";
+import {Name, Bind, Term, Form, Tuple} from "./terms";
 import {Binder, Signature} from "./signature";
 
 /**
@@ -38,9 +38,10 @@ export class Algebra {
     }
 
     op(head: string, ...leaves: Array<Term>): Form {
-        let cell = this.signature.formers[head];
+        let former = this.signature.formers[head];
         // TODO typechecking
-        return new Form(this.atom(head), leaves, cell);
+        let tuple = new Tuple(leaves, former.dom);
+        return new Form(this.atom(head), tuple, former);
     }
 
     bind(name: string, term: Form): Bind {

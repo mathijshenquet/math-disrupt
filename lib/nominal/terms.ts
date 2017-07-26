@@ -229,13 +229,13 @@ export class Bind extends NodeTerm  {
 export class Form extends NodeTerm {
     sort: Former;
     head: Name;
-    leaves: Array<Term>;
+    argument: Tuple;
 
-    constructor(head: Name, leaves: Array<Term>, sort: Former){
+    constructor(head: Name, argument: Tuple, sort: Former){
         super(sort);
 
         this.head = head;
-        this.leaves = leaves;
+        this.argument = argument;
 
         this.computeChildren();
     }
@@ -251,7 +251,7 @@ export class Form extends NodeTerm {
 
         let idx = selector.head;
         if(typeof idx == "number")
-            return this.leaves[idx].select(selector.tail);
+            return this.argument.select(selector);
 
         if(idx == "head")
             return this.head.select(selector.tail);

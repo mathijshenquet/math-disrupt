@@ -72,11 +72,11 @@ export class Binder {
  * Represents a term former.
  */
 export class Former {
-    dom: Sort[];
+    dom: Product;
     cod: string;
     template: Template;
 
-    constructor(dom: Array<Sort>, cod: string, template?: Template) {
+    constructor(dom: Product, cod: string, template?: Template) {
         this.dom = dom;
         this.cod = cod;
 
@@ -101,7 +101,8 @@ export class Signature {
         this.formers = {};
     }
 
-    define(head: string, dom: Sort[], cod: string, template?: Template) {
+    define(head: string, args: Sort[], cod: string, template?: Template) {
+        let dom = new Product(args);
         this.formers[head] = new Former(dom, cod, template);
         return this.formers[head];
     }
