@@ -4,10 +4,11 @@
 
 import * as React from "react";
 import {PureComponent, ReactElement} from "react";
-import {Term} from "../nominal/terms";
+import {Name, Term} from "../nominal/terms";
 import {Cursor, Selector} from "../nominal/navigate";
 import {Atom, BaseAtom} from "../presentation/markup";
 import {Hole, Template} from "../presentation/template";
+import {Sort} from "../nominal/signature";
 
 export interface MathTermProps  {
     term: Term,
@@ -19,21 +20,17 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
     render(): ReactElement<any> {
         const roles = this.props.roles;
         const term = this.props.term;
-        return this.renderTemplate(roles, term.template);
+        if (typeof term.sort == "string"){
+            if (term instanceof Name)
+                return this.renderTemplate(roles, term.name);
+            throw new Error("FATAL");
+        }else {
+            return this.renderTemplate(roles, term.sort.template);
+        }
     }
 
     renderTemplate(roles: Array<string>, template: Template): ReactElement<any>{
-        if(template instanceof Array) {
-            if(template.length == 1){
-                return this.renderAtom(roles, template[0]);
-            }else {
-                return <span className={roles.join(" ")}>
-                    {template.map((item) => this.renderAtom([], item))}
-                </span>;
-            }
-        }
-
-        if(typeof template === "string"){
+        if(typeof template == "string"){
             const caret = this.props.caret;
             if(caret && !caret.tail){
                 let pos: number = caret.head;
@@ -47,12 +44,24 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
             }
         }
 
+        if(template instanceof Array) {
+            if(template.length == 1){
+                return this.renderAtom(roles, template[0]);
+            }else {
+                return <span className={roles.join(" ")}>
+                    {template.map((item) => this.renderAtom([], item))}
+                </span>;
+            }
+        }
+
         return this.renderAtom(roles, template);
     }
 
-    renderHole(selector: Selector, roles: Array<string>){
+    renderHole(selector: Selector, roles: Array<string>): ReactElement<any> {
         const term = this.props.term;
         const caret = this.props.caret;
+
+        if(term instanceof Name) throw new Error("No holes in a Name");
 
         let newCaret = term.contractAlong(caret, selector);
         if(newCaret != undefined) roles.push("cursor");

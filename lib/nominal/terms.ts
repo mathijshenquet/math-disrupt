@@ -14,61 +14,82 @@
  * @module nominal/terms
  */
 
-import * as signature from "./signature";
-import {Cursor, CursorChange, Movement, Selector} from "./navigate";
+import {$, Cursor, CursorChange, Movement, Selector} from "./navigate";
 import {Builder} from "../presentation/builder";
 import {computeHoles, Template} from "../presentation/template";
+import {Binder, Former, Product, Sort} from "./signature";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
  */
-export type Term = Name | Bind | Form | BaseTerm
+export type Term = Name | Bind | Form | Tuple | NodeTerm;
 
-export abstract class BaseTerm {
-    children: Array<Term>;
-    template: Template;
+export class Name {
+    sort: string;
+    name: string;
 
-    constructor(template: Template){
-        this.template = template;
+    constructor(name: string, sort: string){
+        this.sort = sort;
+        this.name = name;
     }
 
-    protected computeChildren(){
-        this.children = computeHoles(this.template).map(this.select.bind(this));
+    enter(movement: Movement): Cursor{
+        return new Cursor(this.name.length * (1 - movement)/2);
+    }
+
+    move(caret: Cursor, movement: Movement): CursorChange {
+        return Cursor.boundedChange(caret.head + movement, this.name.length);
     }
 
     /**
-     * Navigat to a specific point in the Term specified by the Caret.
-     *
-     * @param {Cursor} cursor
+     * Navigate to a specific child in the Term specified by the Caret.
+     */
+    navigate(cursor: Cursor | undefined): Term {
+        return this;
+    }
+
+    /**
+     * Given a selector, returns the relevant child Term.
+     */
+    select(selector: Selector | undefined): Term {
+        if(selector !== undefined) throw new Error("Invalid index");
+        return this;
+    }
+}
+
+export abstract class NodeTerm {
+    children: Array<Term>;
+    sort: Sort;
+
+    constructor(sort: Sort){
+        this.sort = sort;
+    }
+
+    computeChildren(){
+        if(typeof this.sort != "string")
+            this.children = computeHoles(this.sort.template).map(this.select.bind(this));
+    }
+
+    /**
+     * Navigate to a specific child in the Term specified by the Caret.
      */
     navigate(cursor: Cursor | undefined): Term {
         if(cursor === undefined)
             return this;
 
-        let child: Term = this.children[cursor.head];
-        if(child === undefined)
-            return this;
-
-        return child.navigate(cursor.tail);
+        return this.children[cursor.head].navigate(cursor.tail);
     }
 
     /**
      * Given a selector, returns the relevant child Term.
-     *
-     * @param {Selector} selector
-     * @returns {Term}
      */
-    select(selector: Selector): Term {
-        if(selector.length == 0) return this;
+    select(selector: Selector | undefined): Term {
+        if(selector === undefined) return this;
         throw new Error("Invalid index");
     }
 
     /**
      * Move a cursor a specified direction.
-     *
-     * @param {Cursor} caret
-     * @param {Movement} movement
-     * @returns {CursorChange}
      */
     move(caret: Cursor, movement: Movement): CursorChange {
         if(caret.tail != undefined){
@@ -85,27 +106,20 @@ export abstract class BaseTerm {
     /**
      * Given a position (part of a cursor) step it one step. The small step
      * in the large step function `move' above.
-     *
-     * @param {number} pos
-     * @param {Movement} movement
-     * @returns {CursorChange}
      */
     step(pos: number, movement: Movement): CursorChange{
-        let change = Cursor.boundedChange(pos + movement, this.children.length);
+        let change = Cursor.boundedChange(pos + movement, this.children.length-1);
         if(typeof change == "number") return change; // underflow or overflow
 
         // We type the child as BaseTerm so that typescript recognises we use
         // BaseTerm#enter.
-        let child: BaseTerm = this.children[change.head];
+        let child = this.children[change.head];
         let tail = child.enter(movement);
         return new Cursor(change.head, tail);
     }
 
     /**
      * Enter this term with a cursor form the specified direction.
-     *
-     * @param {Movement} movement
-     * @returns {Cursor}
      */
     enter(movement: Movement): Cursor{
         let head = (this.children.length - 1) * (1 - movement)/2;
@@ -124,10 +138,6 @@ export abstract class BaseTerm {
      * exactly that: given the cursor (which is presentational) [3, ...rest],
      * and the selector [0, "term"] it returns [...rest], and given [2, ..rest]
      * it returned undefined. Which are the cursors relative to the child `term`.
-     *
-     * @param {Cursor} caret
-     * @param {Selector} selector
-     * @returns {Cursor | void}
      */
     contractAlong(caret: Cursor | undefined, selector: Selector): Cursor | undefined{
         if(caret === undefined) return;
@@ -140,46 +150,20 @@ export abstract class BaseTerm {
     }
 }
 
-export interface BaseTerm {
-    step(pos: number, movement: Movement): CursorChange;
+// Extra methods instances of BaseTerm should have. This is similar to adding
+// virtual methods in C#
+export interface NodeTerm {
+    select(selector: Selector | undefined): Term;
 }
 
-export class Name extends BaseTerm {
-    sort: any;
-    name: string;
+export class Tuple extends NodeTerm{
+    sort: Product;
+    elements: Array<Term>;
 
-    constructor(name: string, sort: any){
-        super(name);
+    constructor(elements: Array<Term>, sort: Product){
+        super(sort);
 
-        this.name = name;
-        this.sort = sort;
-
-        this.computeChildren();
-    }
-
-    enter(movement: Movement): Cursor{
-        return new Cursor(this.name.length * (1 - movement)/2);
-    }
-
-    step(pos: number, movement: Movement): CursorChange {
-        return Cursor.boundedChange(pos + movement, this.name.length+1);
-    }
-}
-
-/**
- * The bottom right rule from [NomSets] definition 8.2
- */
-export class Bind extends BaseTerm  {
-    sort: signature.Binder;
-    name: Name;
-    term: Term;
-
-    constructor(name: Name, term: Form, sort: signature.Binder){
-        super([Builder.hole(['name'], ["variant-normal"]), Builder.punct(","), Builder.hole(['term'])]);
-
-        this.name = name;
-        this.term = term;
-        this.sort = sort;
+        this.elements = elements;
 
         this.computeChildren();
     }
@@ -191,15 +175,48 @@ export class Bind extends BaseTerm  {
      * @param {number} i
      * @returns {Term}
      */
-    select(selector: Selector): Term {
-        if(selector.length == 0)
-            return this;
+    select(selector: Selector | undefined): Term {
+        if(selector === undefined) return this;
 
-        switch(selector[0]) {
+        if(typeof selector.head == "number")
+            return this.elements[selector.head].select(selector.tail);
+
+        throw new Error("Invalid selector");
+    }
+}
+
+/**
+ * The bottom right rule from [NomSets] definition 8.2
+ */
+export class Bind extends NodeTerm  {
+    sort: Binder;
+    name: Name;
+    term: Term;
+
+    constructor(name: Name, term: Form, sort: Binder){
+        super(sort);
+
+        this.name = name;
+        this.term = term;
+
+        this.computeChildren();
+    }
+
+    /**
+     * Given a selector, returns the relevant child Term.
+     *
+     * @param {Selector} selector
+     * @param {number} i
+     * @returns {Term}
+     */
+    select(selector: Selector | undefined): Term {
+        if(selector === undefined) return this;
+
+        switch(selector.head) {
             case "name":
-                return this.name.select(selector.slice(1));
+                return this.name.select(selector.tail);
             case "term":
-                return this.term.select(selector.slice(1));
+                return this.term.select(selector.tail);
             default:
                 throw new Error("Invalid selector");
         }
@@ -209,17 +226,16 @@ export class Bind extends BaseTerm  {
 /**
  * The top middle, top right and bottom left rules from [NomSets] definition 8.2
  */
-export class Form extends BaseTerm {
-    sort: signature.Former;
+export class Form extends NodeTerm {
+    sort: Former;
     head: Name;
     leaves: Array<Term>;
 
-    constructor(head: Name, leaves: Array<Term>, sort: signature.Former){
-        super(sort.template);
+    constructor(head: Name, leaves: Array<Term>, sort: Former){
+        super(sort);
 
         this.head = head;
         this.leaves = leaves;
-        this.sort = sort;
 
         this.computeChildren();
     }
@@ -228,19 +244,17 @@ export class Form extends BaseTerm {
      * Given a selector, returns the relevant child Term.
      *
      * @param {Selector} selector
-     * @param {number} i
      * @returns {Term}
      */
-    select(selector: Selector): Term {
-        if(selector.length == 0)
-            return this;
+    select(selector: Selector | undefined): Term {
+        if(selector === undefined) return this;
 
-        let idx = selector[0];
+        let idx = selector.head;
         if(typeof idx == "number")
-            return this.leaves[idx].select(selector.slice(1));
+            return this.leaves[idx].select(selector.tail);
 
         if(idx == "head")
-            return this.head.select(selector.slice(1));
+            return this.head.select(selector.tail);
 
         throw new Error("Invalid selector");
     }

@@ -5,7 +5,7 @@ require("./index.less");
 
 import {render} from "react-dom";
 import * as React from "react";
-import {integral, $, sum} from "./test/math";
+import {integral, sum} from "./test/math";
 
 console.log(integral);
 

@@ -11,9 +11,8 @@
  * @module nominal/algebra
  */
 
-import {Signature} from "./signature";
-import * as signature from "./signature";
 import {Name, Bind, Term, Form} from "./terms";
+import {Binder, Signature} from "./signature";
 
 /**
  * A name sorting for the countably infinite set A of atomic names is given by a
@@ -21,19 +20,19 @@ import {Name, Bind, Term, Form} from "./terms";
  *
  * See [NomSets] definition 4.26
  */
-export interface Sorting<N> {
-    (atom: string): N;
+export interface Sorting {
+    (atom: string): string;
 }
 
 /**
  * This is supposed to implement the (analogue of the) inductive rules
  * from [NomSets] definition 8.2.
  */
-export class Algebra<N, D> {
-    signature: Signature<N, D>;
-    sorting: Sorting<N>;
+export class Algebra {
+    signature: Signature;
+    sorting: Sorting;
 
-    constructor(signature: Signature<N, D>, sorting: Sorting<N>) {
+    constructor(signature: Signature, sorting: Sorting) {
         this.signature = signature;
         this.sorting = sorting;
     }
@@ -45,7 +44,7 @@ export class Algebra<N, D> {
     }
 
     bind(name: string, term: Form): Bind {
-        return new Bind(this.atom(name), term, new signature.Binder(name, term.sort));
+        return new Bind(this.atom(name), term, new Binder(name, term.sort));
     }
 
     atom(name: string){

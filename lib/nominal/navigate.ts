@@ -5,27 +5,39 @@ export enum Movement {
 }
 
 /**
- * A selector is meant to specify a
+ * A selector is meant to specify a part of an term
  */
-export type Selector = Array<number | string>;
+export type Selector = Cursor<number | string>;
 
-export class Cursor{
-    head: number;
-    tail?: Cursor;
+export function $(...selector: Array<number | string>): Selector{
+    let sel = Cursor.fromArray<number | string>(selector);
+    if(sel === undefined) throw new Error("Cannot make an empty selector");
+    return sel;
+}
 
-    constructor(head: number, tail?: Cursor){
-        this.head = head; this.tail = tail;
+export class Cursor<T=number>{
+    head: T;
+    tail?: Cursor<T>;
+
+    get length(): number{
+        if(this.tail) return this.tail.length + 1;
+        else return 1;
+    }
+
+    constructor(head: T, tail?: Cursor<T>){
+        this.head = head;
+        this.tail = tail;
     }
 
     static boundedChange(pos: number, max: number): CursorChange {
         if(pos < 0) return Movement.Left;
-        if(pos >= max) return Movement.Right;
+        if(pos > max) return Movement.Right;
         else return new Cursor(pos);
     }
 
-    asArray(): Array<number>{
+    asArray(): Array<T>{
         let out = [];
-        let caret: undefined | Cursor = this;
+        let caret: undefined | Cursor<T> = this;
         while(caret){
             out.push(caret.head);
             caret = caret.tail;
@@ -33,10 +45,10 @@ export class Cursor{
         return out;
     }
 
-    static fromArray(list: Array<number>): Cursor | undefined {
-        let caret: Cursor | undefined = undefined;
+    static fromArray<T>(list: Array<T>): Cursor<T> | undefined {
+        let caret: Cursor<T> | undefined = undefined;
         for(let i = list.length-1; i >= 0; i--){
-            caret = new Cursor(list[i], caret);
+            caret = new Cursor<T>(list[i], caret);
         }
         return caret;
     }

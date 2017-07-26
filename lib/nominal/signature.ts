@@ -16,38 +16,67 @@
 
 import {Builder} from "../presentation/builder"
 import {Template} from "../presentation/template";
+import {$} from "./navigate";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
  * essentially only one data sort 0 (using [NomSets] terminology).
- * The N and the D are the name and data sorts generating the
+ * The string and the string are the name and data sorts generating the
  * possible sorts. In [NomSets] this is analogous to the inductivily
  * genderated S (eq (8.2)). However here we limit our attention to only a single
  * layer of Binding and a single layer of abstraction, i.e. only 'first order'
  * variables (In [ProgMLTT] it is remarked, in section 4.2, that only such first
  * order variables are needed for the type theory).
  */
-export type Sort<N, D> = N | D | Binder<N, D> | Former<N, D>;
+export type Sort = string | Binder | Former | Product;
+
+export class Product{
+    elements: Array<Sort>;
+    template: Template;
+    length: number;
+
+    constructor(elements: Array<Sort>){
+        this.elements = elements;
+        this.length = elements.length;
+        this.template = [];
+        for(let i = 0; i < elements.length; i++) {
+            if (i != 0) this.template.push(Builder.punct(","));
+            this.template.push(Builder.hole($(i)));
+        }
+    }
+
+    pi(idx: number): Sort{
+        return this.elements[idx];
+    }
+}
 
 /**
- * Represents a bound name in a term of sort D.
+ * Represents a bound name in a term of sort string.
  */
-export class Binder<N=any, D=any, A=any> {
-    name: N;
-    term: D;
+export class Binder {
+    name: string;
+    term: Sort;
+    template: Template = [
+        Builder.hole($('name'), ["variant-normal"]),
+        Builder.punct(","),
+        Builder.hole($('term'))
+    ];
 
-    constructor(name: N, term: D) {
+    constructor(name: string, term: Sort) {
         this.name = name;
         this.term = term;
     }
 }
 
-export class Former<N=any, D=any> {
-    dom: Sort<N, D>[];
-    cod: D;
+/**
+ * Represents a term former.
+ */
+export class Former {
+    dom: Sort[];
+    cod: string;
     template: Template;
 
-    constructor(dom: Array<Sort<N, D>>, cod: D, template?: Template) {
+    constructor(dom: Array<Sort>, cod: string, template?: Template) {
         this.dom = dom;
         this.cod = cod;
 
@@ -59,20 +88,20 @@ export class Former<N=any, D=any> {
         const args = [];
         for(let i = 0; i < this.dom.length; i++) {
             if (i != 0) args.push(Builder.punct(","));
-            args.push(Builder.hole([i]));
+            args.push(Builder.hole($(i)));
         }
-        return [Builder.hole(["head"], ["variant-normal"]), Builder.fence("(", args, ")")];
+        return [Builder.hole($("head"), ["variant-normal"]), Builder.fence("(", args, ")")];
     }
 }
 
-export class Signature<N=any, D=any> {
-    formers: { [s: string]: Former<N, D> };
+export class Signature {
+    formers: { [s: string]: Former };
 
     constructor(){
         this.formers = {};
     }
 
-    define(head: string, dom: Sort<N, D>[], cod: D, template?: Template) {
+    define(head: string, dom: Sort[], cod: string, template?: Template) {
         this.formers[head] = new Former(dom, cod, template);
         return this.formers[head];
     }
