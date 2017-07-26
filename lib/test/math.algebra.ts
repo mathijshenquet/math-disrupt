@@ -6,7 +6,8 @@ import {$} from "../nominal/navigate";
 
 let binary = [Builder.bin(Builder.hole($(0)), Builder.hole($("head")), Builder.hole($(1)))];
 
-export let signature = new Signature();
+export let signature = new Signature(["number", "string"], ["term"]);
+
 signature.define("num", ["number"], "term", Builder.ord(Builder.hole($(0)), {variant: "normal"}));
 signature.define("var", ["string"], "term", Builder.ord(Builder.hole($(0))));
 signature.define("+", ["term", "term"], "term", binary);

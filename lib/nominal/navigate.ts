@@ -19,11 +19,6 @@ export class Cursor<T=number>{
     head: T;
     tail?: Cursor<T>;
 
-    get length(): number{
-        if(this.tail) return this.tail.length + 1;
-        else return 1;
-    }
-
     constructor(head: T, tail?: Cursor<T>){
         this.head = head;
         this.tail = tail;

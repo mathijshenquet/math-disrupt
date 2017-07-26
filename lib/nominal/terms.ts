@@ -14,38 +14,44 @@
  * @module nominal/terms
  */
 
+import {Set} from "immutable";
 import {$, Cursor, CursorChange, Movement, Selector} from "./navigate";
 import {Builder} from "../presentation/builder";
 import {computeHoles, Template} from "../presentation/template";
 import {Binder, Former, Product, Sort} from "./signature";
+import {flatten} from "../helper";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
  */
-export type Term = Name | Bind | Form | Tuple | NodeTerm;
+export type Term = Name | Unknown | Bind | Form | Tuple;
 
-export class Name {
-    sort: string;
-    name: string;
+export interface BaseTerm{
+    support(): Set<string>;
+}
 
-    constructor(name: string, sort: string){
-        this.sort = sort;
-        this.name = name;
+export abstract class LeafTerm {
+    sort: Sort;
+    length: number;
+    template: Template;
+
+    constructor(length: number){
+        this.length = length;
     }
 
     enter(movement: Movement): Cursor{
-        return new Cursor(this.name.length * (1 - movement)/2);
+        return new Cursor(this.length * (1 - movement)/2);
     }
 
     move(caret: Cursor, movement: Movement): CursorChange {
-        return Cursor.boundedChange(caret.head + movement, this.name.length);
+        return Cursor.boundedChange(caret.head + movement, this.length);
     }
 
     /**
      * Navigate to a specific child in the Term specified by the Caret.
      */
     navigate(cursor: Cursor | undefined): Term {
-        return this;
+        return <any>this;
     }
 
     /**
@@ -53,7 +59,52 @@ export class Name {
      */
     select(selector: Selector | undefined): Term {
         if(selector !== undefined) throw new Error("Invalid index");
-        return this;
+        return <any>this;
+    }
+}
+
+export class Unknown extends LeafTerm {
+    sort: Sort;
+    name: string;
+
+    constructor(name: string, sort: Sort){
+        super(0);
+
+        this.sort = sort;
+        this.name = name;
+    }
+
+    support(): Set<string>{
+        return Set();
+    }
+}
+
+export class Name extends LeafTerm {
+    sort: string;
+    name: string;
+
+    constructor(name: string, sort: string){
+        super(name.length);
+
+        this.sort = sort;
+        this.name = name;
+    }
+
+    input(caret: Cursor, fragment: string){
+        let name = this.name;
+        this.name = name.slice(0, caret.head)
+                  + fragment
+                  + name.slice(caret.head);
+    }
+
+    remove(caret: Cursor, length: number = 1){
+        let name = this.name;
+        this.name = name.slice(0, caret.head)
+                  + name.slice(caret.head + length);
+    }
+
+    support(): Set<string>{
+        return Set(this.name);
     }
 }
 
@@ -75,7 +126,7 @@ export abstract class NodeTerm {
      */
     navigate(cursor: Cursor | undefined): Term {
         if(cursor === undefined)
-            return this;
+            return <any>this;
 
         return this.children[cursor.head].navigate(cursor.tail);
     }
@@ -84,7 +135,7 @@ export abstract class NodeTerm {
      * Given a selector, returns the relevant child Term.
      */
     select(selector: Selector | undefined): Term {
-        if(selector === undefined) return this;
+        if(selector === undefined) return <any>this;
         throw new Error("Invalid index");
     }
 
@@ -183,6 +234,13 @@ export class Tuple extends NodeTerm{
 
         throw new Error("Invalid selector");
     }
+
+    support(): Set<string>{
+        return this.elements.reduce(
+            (collection: Set<string>, item) => collection.union(item.support())
+            , Set<string>()
+        );
+    }
 }
 
 /**
@@ -221,6 +279,10 @@ export class Bind extends NodeTerm  {
                 throw new Error("Invalid selector");
         }
     }
+
+    support(): Set<string>{
+        return this.term.support().remove(this.name.name);
+    }
 }
 
 /**
@@ -257,5 +319,9 @@ export class Form extends NodeTerm {
             return this.head.select(selector.tail);
 
         throw new Error("Invalid selector");
+    }
+
+    support(): Set<string>{
+        return this.argument.support();
     }
 }

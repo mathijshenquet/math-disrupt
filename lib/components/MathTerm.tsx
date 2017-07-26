@@ -4,7 +4,7 @@
 
 import * as React from "react";
 import {PureComponent, ReactElement} from "react";
-import {Name, Term} from "../nominal/terms";
+import {LeafTerm, Name, Term} from "../nominal/terms";
 import {Cursor, Selector} from "../nominal/navigate";
 import {Atom, BaseAtom} from "../presentation/markup";
 import {Hole, Template} from "../presentation/template";
@@ -61,7 +61,7 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
         const term = this.props.term;
         const caret = this.props.caret;
 
-        if(term instanceof Name) throw new Error("No holes in a Name");
+        if(term instanceof LeafTerm) throw new Error("No holes in a Leaf");
 
         let newCaret = term.contractAlong(caret, selector);
         if(newCaret != undefined) roles.push("cursor");

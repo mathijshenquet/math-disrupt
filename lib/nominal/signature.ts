@@ -48,6 +48,10 @@ export class Product{
     pi(idx: number): Sort{
         return this.elements[idx];
     }
+
+    isValid(sig: Signature): boolean{
+        return this.elements.every(sig.isSort.bind(sig));
+    }
 }
 
 /**
@@ -65,6 +69,10 @@ export class Binder {
     constructor(name: string, term: Sort) {
         this.name = name;
         this.term = term;
+    }
+
+    isValid(sig: Signature): boolean{
+        return sig.isName(this.name) && sig.isSort(this.term);
     }
 }
 
@@ -92,18 +100,39 @@ export class Former {
         }
         return [Builder.hole($("head"), ["variant-normal"]), Builder.fence("(", args, ")")];
     }
+
+    isValid(sig: Signature): boolean{
+        return this.dom.isValid(sig) && sig.isBase(this.cod);
+    }
 }
 
 export class Signature {
     formers: { [s: string]: Former };
+    nameSorts: Array<string>;
+    baseSorts: Array<string>;
 
-    constructor(){
+    constructor(nameSorts: Array<string>, baseSorts: Array<string>){
         this.formers = {};
+        this.nameSorts = nameSorts;
+        this.baseSorts = baseSorts;
+    }
+
+    isName(name: string){
+        return this.nameSorts.indexOf(name) !== -1;
+    }
+
+    isBase(base: string){
+        return this.baseSorts.indexOf(base) !== -1;
+    }
+
+    isSort(sort: Sort){
+        return typeof sort === "string" || sort.isValid(this);
     }
 
     define(head: string, args: Sort[], cod: string, template?: Template) {
-        let dom = new Product(args);
-        this.formers[head] = new Former(dom, cod, template);
+        let former = new Former(new Product(args), cod, template);
+        if(!this.isSort(former)) throw new Error("Invalid definition");
+        this.formers[head] = former;
         return this.formers[head];
     }
 }

@@ -1,6 +1,7 @@
 
 import {Atom, children, Field} from "./markup";
 import {Selector} from "../nominal/navigate";
+import {flatten} from "../helper";
 
 export interface Hole {
     kind: "hole";
@@ -9,10 +10,6 @@ export interface Hole {
 }
 
 export type Template = Field<Hole>;
-
-function flatten<T>(arrays: Array<Array<T>>): Array<T> {
-    return (<Array<T>>[]).concat(...arrays);
-}
 
 export function computeHoles(template: Template): Array<Selector> {
     if(typeof template == "string")
