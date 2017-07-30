@@ -51,7 +51,6 @@ export class Editor extends PureComponent<EditorProps, EditorState> {
 
     render(): ReactElement<any> {
         const caret = this.state.caret, term = this.props.term;
-        console.log(caret.asArray(), term.navigate(caret));
 
         return <div className="editor" tabIndex={0} onKeyDown={this.keyDown.bind(this)}>
             <MathInline term={this.props.term} caret={this.state.caret} />

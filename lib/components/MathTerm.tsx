@@ -22,7 +22,7 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
         const term = this.props.term;
         if (typeof term.sort == "string"){
             if (term instanceof Name)
-                return this.renderTemplate(roles, term.name);
+                return this.renderTemplate(roles, term.name.toString());
             throw new Error("FATAL");
         }else {
             return this.renderTemplate(roles, term.sort.template);

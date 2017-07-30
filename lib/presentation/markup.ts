@@ -16,6 +16,8 @@
  * @module presentation
  */
 
+import {Identifier} from "../nominal/identifier";
+
 /**
  * The basic structural element of presentational math is the MathList.
  * This concept is taken from [TeXbook, page 157]. And is similar to
@@ -24,7 +26,7 @@
 export type MathList<H=never> = Array<Atom<H> | H>;
 
 /**
- * A field is an TeX notion, an TeX atom contains a nucleus, sub- and supscript
+ * A field is a TeX notion, a TeX atom contains a nucleus, sub- and supscript
  * Field all of which are empty, contain a symbol or a MathList. Empty will
  * be represented by the absence of a field (see below).
  */

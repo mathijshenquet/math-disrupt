@@ -8,6 +8,7 @@ import * as React from "react";
 import {integral, sum} from "./test/math";
 
 console.log(integral);
+console.log(integral.support().report());
 
 /*let doc = ["Let",
           $.op("var", $.atom("x")).expand({}),

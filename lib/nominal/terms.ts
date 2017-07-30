@@ -16,10 +16,10 @@
 
 import {Set} from "immutable";
 import {$, Cursor, CursorChange, Movement, Selector} from "./navigate";
-import {Builder} from "../presentation/builder";
 import {computeHoles, Template} from "../presentation/template";
 import {Binder, Former, Product, Sort} from "./signature";
-import {flatten} from "../helper";
+import {Id, Identifier} from "./identifier";
+import {PermissionSet, SupportSet} from "./support";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
@@ -27,13 +27,12 @@ import {flatten} from "../helper";
 export type Term = Name | Unknown | Bind | Form | Tuple;
 
 export interface BaseTerm{
-    support(): Set<string>;
+    support(): Set<Identifier>;
 }
 
 export abstract class LeafTerm {
     sort: Sort;
     length: number;
-    template: Template;
 
     constructor(length: number){
         this.length = length;
@@ -65,46 +64,51 @@ export abstract class LeafTerm {
 
 export class Unknown extends LeafTerm {
     sort: Sort;
+    pms: PermissionSet;
     name: string;
 
     constructor(name: string, sort: Sort){
         super(0);
 
+        this.pms = new PermissionSet();
         this.sort = sort;
         this.name = name;
     }
 
-    support(): Set<string>{
-        return Set();
+    support(): SupportSet {
+        return this.pms.support();
     }
 }
 
+/**
+ * Names are represented by a base name and a shift.
+ */
 export class Name extends LeafTerm {
     sort: string;
-    name: string;
+    name: Identifier;
 
     constructor(name: string, sort: string){
         super(name.length);
 
         this.sort = sort;
-        this.name = name;
+        this.name = Id(name);
     }
 
     input(caret: Cursor, fragment: string){
         let name = this.name;
-        this.name = name.slice(0, caret.head)
-                  + fragment
-                  + name.slice(caret.head);
+        this.name = name.rename(name.base.slice(0, caret.head)
+                               + fragment
+                               + name.base.slice(caret.head));
     }
 
     remove(caret: Cursor, length: number = 1){
         let name = this.name;
-        this.name = name.slice(0, caret.head)
-                  + name.slice(caret.head + length);
+        this.name = name.rename(name.base.slice(0, caret.head)
+                               + name.base.slice(caret.head + length));
     }
 
-    support(): Set<string>{
-        return Set(this.name);
+    support(): SupportSet {
+        return new SupportSet(Set([this.name]));
     }
 }
 
@@ -235,10 +239,10 @@ export class Tuple extends NodeTerm{
         throw new Error("Invalid selector");
     }
 
-    support(): Set<string>{
+    support(): SupportSet{
         return this.elements.reduce(
-            (collection: Set<string>, item) => collection.union(item.support())
-            , Set<string>()
+            (collection: SupportSet, item: Term) => collection.union(item.support())
+            , new SupportSet(Set())
         );
     }
 }
@@ -280,7 +284,7 @@ export class Bind extends NodeTerm  {
         }
     }
 
-    support(): Set<string>{
+    support(): SupportSet{
         return this.term.support().remove(this.name.name);
     }
 }
@@ -321,7 +325,7 @@ export class Form extends NodeTerm {
         throw new Error("Invalid selector");
     }
 
-    support(): Set<string>{
+    support(): SupportSet{
         return this.argument.support();
     }
 }
