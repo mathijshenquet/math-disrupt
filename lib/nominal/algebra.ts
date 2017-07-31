@@ -39,7 +39,6 @@ export class Algebra {
 
     op(head: string, ...leaves: Array<Term>): Form {
         let former = this.signature.formers[head];
-        // TODO typechecking
         let tuple = new Tuple(leaves, former.dom);
         return new Form(this.atom(head), tuple, former);
     }

@@ -15,20 +15,16 @@
  */
 
 import {Set} from "immutable";
-import {$, Cursor, CursorChange, Movement, Selector} from "./navigate";
+import {Cursor, CursorChange, Movement, Selector} from "./navigate";
 import {computeHoles, Template} from "../presentation/template";
 import {Binder, Former, Product, Sort} from "./signature";
 import {Id, Identifier} from "./identifier";
-import {PermissionSet, SupportSet} from "./support";
+import {PermissionSet} from "./unknown";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
  */
 export type Term = Name | Unknown | Bind | Form | Tuple;
-
-export interface BaseTerm{
-    support(): Set<Identifier>;
-}
 
 export abstract class LeafTerm {
     sort: Sort;
@@ -74,10 +70,6 @@ export class Unknown extends LeafTerm {
         this.sort = sort;
         this.name = name;
     }
-
-    support(): SupportSet {
-        return this.pms.support();
-    }
 }
 
 /**
@@ -105,10 +97,6 @@ export class Name extends LeafTerm {
         let name = this.name;
         this.name = name.rename(name.base.slice(0, caret.head)
                                + name.base.slice(caret.head + length));
-    }
-
-    support(): SupportSet {
-        return new SupportSet(Set([this.name]));
     }
 }
 
@@ -211,7 +199,7 @@ export interface NodeTerm {
     select(selector: Selector | undefined): Term;
 }
 
-export class Tuple extends NodeTerm{
+export class Tuple extends NodeTerm {
     sort: Product;
     elements: Array<Term>;
 
@@ -238,19 +226,12 @@ export class Tuple extends NodeTerm{
 
         throw new Error("Invalid selector");
     }
-
-    support(): SupportSet{
-        return this.elements.reduce(
-            (collection: SupportSet, item: Term) => collection.union(item.support())
-            , new SupportSet(Set())
-        );
-    }
 }
 
 /**
  * The bottom right rule from [NomSets] definition 8.2
  */
-export class Bind extends NodeTerm  {
+export class Bind extends NodeTerm {
     sort: Binder;
     name: Name;
     term: Term;
@@ -282,10 +263,6 @@ export class Bind extends NodeTerm  {
             default:
                 throw new Error("Invalid selector");
         }
-    }
-
-    support(): SupportSet{
-        return this.term.support().remove(this.name.name);
     }
 }
 
@@ -323,9 +300,5 @@ export class Form extends NodeTerm {
             return this.head.select(selector.tail);
 
         throw new Error("Invalid selector");
-    }
-
-    support(): SupportSet{
-        return this.argument.support();
     }
 }

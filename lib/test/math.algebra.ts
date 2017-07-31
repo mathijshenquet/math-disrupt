@@ -2,14 +2,14 @@
 import {Algebra} from "../nominal/algebra";
 import {Binder, Signature} from "../nominal/signature";
 import {Builder} from "../presentation/builder";
-import {$} from "../nominal/navigate";
+import {Selector} from "../nominal/navigate";
 
-let binary = [Builder.bin(Builder.hole($(0)), Builder.hole($("head")), Builder.hole($(1)))];
+let binary = [Builder.bin(Builder.hole(Selector(0)), Builder.hole(Selector("head")), Builder.hole(Selector(1)))];
 
 export let signature = new Signature(["number", "string"], ["term"]);
 
-signature.define("num", ["number"], "term", Builder.ord(Builder.hole($(0)), {variant: "normal"}));
-signature.define("var", ["string"], "term", Builder.ord(Builder.hole($(0))));
+signature.define("num", ["number"], "term", Builder.ord(Builder.hole(Selector(0)), {variant: "normal"}));
+signature.define("var", ["string"], "term", Builder.ord(Builder.hole(Selector(0))));
 signature.define("+", ["term", "term"], "term", binary);
 signature.define("sin", ["term"], "term");
 signature.define("d", ["string"], "term");
@@ -18,12 +18,12 @@ signature.define("int",
     [
         Builder.op("∫", {
             size: "integral",
-            sub: Builder.hole($(0)),
-            sup: Builder.hole($(1))
+            sub: Builder.hole(Selector(0)),
+            sup: Builder.hole(Selector(1))
         }),
-        Builder.hole($(2,"term"), ["term"]),
+        Builder.hole(Selector(2,"term"), ["term"]),
         Builder.op("d"),
-        Builder.ord(Builder.hole($(2, "name"),["name"]))
+        Builder.ord(Builder.hole(Selector(2, "name"),["name"]))
     ]
 );
 

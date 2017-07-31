@@ -5,6 +5,7 @@
 import {Map, Set} from "immutable";
 import {Permutation, Swap, Shift} from "./permutation";
 import {Identifier} from "./identifier";
+import {Bind, Form, Name, Term, Tuple, Unknown} from "./terms";
 
 const maxMerger = (a: number, b: number) => Math.max(a, b);
 
@@ -72,36 +73,25 @@ export class SupportSet{
     }
 }
 
-/**
- * In its basic form a PermissionSet is the atoms that are allowed to used in
- * some expression. To ensure names are fresh a collection of shifts is
- * remembered (See Shift).
- */
-export class PermissionSet{
-    readonly shifts: Map<string, number>;
+export function support(term: Term): SupportSet{
+    if(term instanceof Name)
+        return new SupportSet(Set([term.name]));
 
-    constructor(shifts: Map<string, number> = Map()){
-        this.shifts = shifts;
-    }
+    else if(term instanceof Unknown)
+        return new SupportSet(Set(), term.pms.shifts);
 
-    support(): SupportSet {
-        return new SupportSet(Set(), this.shifts);
-    }
+    else if(term instanceof Form)
+        return support(term.argument);
 
-    permute(perm: Permutation) {
-        let shifts = this.shifts;
-        if (perm instanceof Shift) {
-            shifts = shifts.update(perm.name, 0,
-                (shift: number): number => shift + perm.amount);
+    else if(term instanceof Tuple)
+        return term.elements.reduce(
+            (collection, item) => collection.union(support(item))
+            , new SupportSet(Set())
+        );
 
-        }else if(perm instanceof Swap){
-            let leftShift = shifts.get(perm.left, 0);
-            let rightShift = shifts.get(perm.right, 0);
+    else if(term instanceof Bind)
+        return support(term.term).remove(term.name.name);
 
-            shifts = shifts.set(perm.left, rightShift)
-                .set(perm.right, leftShift);
-        }
-
-        return new PermissionSet(shifts);
-    }
+    else
+        throw new Error("Unreachable in #support");
 }

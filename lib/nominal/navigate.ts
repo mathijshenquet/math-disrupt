@@ -9,7 +9,7 @@ export enum Movement {
  */
 export type Selector = Cursor<number | string>;
 
-export function $(...selector: Array<number | string>): Selector{
+export function Selector(...selector: Array<number | string>): Selector{
     let sel = Cursor.fromArray<number | string>(selector);
     if(sel === undefined) throw new Error("Cannot make an empty selector");
     return sel;

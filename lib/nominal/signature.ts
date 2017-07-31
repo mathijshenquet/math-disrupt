@@ -16,7 +16,7 @@
 
 import {Builder} from "../presentation/builder"
 import {Template} from "../presentation/template";
-import {$} from "./navigate";
+import {Selector} from "./navigate";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
@@ -41,7 +41,7 @@ export class Product{
         this.template = [];
         for(let i = 0; i < elements.length; i++) {
             if (i != 0) this.template.push(Builder.punct(","));
-            this.template.push(Builder.hole($(i)));
+            this.template.push(Builder.hole(Selector(i)));
         }
     }
 
@@ -61,9 +61,9 @@ export class Binder {
     name: string;
     term: Sort;
     template: Template = [
-        Builder.hole($('name'), ["variant-normal"]),
+        Builder.hole(Selector('name'), ["variant-normal"]),
         Builder.punct(","),
-        Builder.hole($('term'))
+        Builder.hole(Selector('term'))
     ];
 
     constructor(name: string, term: Sort) {
@@ -96,9 +96,9 @@ export class Former {
         const args = [];
         for(let i = 0; i < this.dom.length; i++) {
             if (i != 0) args.push(Builder.punct(","));
-            args.push(Builder.hole($(i)));
+            args.push(Builder.hole(Selector(i)));
         }
-        return [Builder.hole($("head"), ["variant-normal"]), Builder.fence("(", args, ")")];
+        return [Builder.hole(Selector("head"), ["variant-normal"]), Builder.fence("(", args, ")")];
     }
 
     isValid(sig: Signature): boolean{
