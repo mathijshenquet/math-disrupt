@@ -11,8 +11,9 @@
  * @module nominal/algebra
  */
 
-import {Name, Bind, Term, Form, Tuple} from "./terms";
+import {Bind, Term, Form, Composite} from "./term";
 import {Binder, Signature} from "./signature";
+import {Id, Identifier} from "./identifier";
 
 /**
  * A name sorting for the countably infinite set A of atomic names is given by a
@@ -39,15 +40,14 @@ export class Algebra {
 
     op(head: string, ...leaves: Array<Term>): Form {
         let former = this.signature.formers[head];
-        let tuple = new Tuple(leaves, former.dom);
-        return new Form(this.atom(head), tuple, former);
+        return new Form(this.atom(head), new Composite(leaves, former.dom), former);
     }
 
     bind(name: string, term: Form): Bind {
         return new Bind(this.atom(name), term, new Binder(name, term.sort));
     }
 
-    atom(name: string){
-        return new Name(name, this.sorting(name));
+    atom(name: string): Identifier{
+        return Id(name);
     }
 }

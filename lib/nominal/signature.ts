@@ -16,7 +16,7 @@
 
 import {Builder} from "../presentation/builder"
 import {Template} from "../presentation/template";
-import {Selector} from "./navigate";
+import {Selector} from "./selector";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
@@ -32,17 +32,11 @@ export type Sort = string | Binder | Former | Product;
 
 export class Product{
     elements: Array<Sort>;
-    template: Template;
     length: number;
 
     constructor(elements: Array<Sort>){
         this.elements = elements;
         this.length = elements.length;
-        this.template = [];
-        for(let i = 0; i < elements.length; i++) {
-            if (i != 0) this.template.push(Builder.punct(","));
-            this.template.push(Builder.hole(Selector(i)));
-        }
     }
 
     pi(idx: number): Sort{
@@ -60,11 +54,6 @@ export class Product{
 export class Binder {
     name: string;
     term: Sort;
-    template: Template = [
-        Builder.hole(Selector('name'), ["variant-normal"]),
-        Builder.punct(","),
-        Builder.hole(Selector('term'))
-    ];
 
     constructor(name: string, term: Sort) {
         this.name = name;

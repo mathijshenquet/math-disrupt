@@ -5,7 +5,8 @@
 import {Map, Set} from "immutable";
 import {Permutation, Swap, Shift} from "./permutation";
 import {Identifier} from "./identifier";
-import {Bind, Form, Name, Term, Tuple, Unknown} from "./terms";
+import {Bind, Form, Term, Composite} from "./term";
+import {Unknown} from "./unknown";
 
 const maxMerger = (a: number, b: number) => Math.max(a, b);
 
@@ -74,8 +75,8 @@ export class SupportSet{
 }
 
 export function support(term: Term): SupportSet{
-    if(term instanceof Name)
-        return new SupportSet(Set([term.name]));
+    if(term instanceof Identifier)
+        return new SupportSet(Set([term]));
 
     else if(term instanceof Unknown)
         return new SupportSet(Set(), term.pms.shifts);
@@ -83,14 +84,14 @@ export function support(term: Term): SupportSet{
     else if(term instanceof Form)
         return support(term.argument);
 
-    else if(term instanceof Tuple)
+    else if(term instanceof Composite)
         return term.elements.reduce(
             (collection, item) => collection.union(support(item))
             , new SupportSet(Set())
         );
 
     else if(term instanceof Bind)
-        return support(term.term).remove(term.name.name);
+        return support(term.term).remove(term.name);
 
     else
         throw new Error("Unreachable in #support");

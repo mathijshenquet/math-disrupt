@@ -5,7 +5,7 @@
 
 import {Options, SubSup, BinRel, Fence, Op, OrdPunct} from "./markup";
 import {Hole, Template} from "./template";
-import {Selector} from "../nominal/navigate";
+import {Selector} from "../nominal/selector";
 
 export type Optional = Options & SubSup<Hole>;
 

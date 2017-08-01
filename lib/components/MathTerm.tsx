@@ -4,11 +4,13 @@
 
 import * as React from "react";
 import {PureComponent, ReactElement} from "react";
-import {LeafTerm, Name, Term} from "../nominal/terms";
-import {Cursor, Selector} from "../nominal/navigate";
+import {Term} from "../nominal/term";
+import {Cursor} from "../nominal/cursor";
 import {Atom, BaseAtom} from "../presentation/markup";
 import {Hole, Template} from "../presentation/template";
 import {Sort} from "../nominal/signature";
+import {Identifier} from "../nominal/identifier";
+import {Selector} from "../nominal/selector";
 
 export interface MathTermProps  {
     term: Term,
@@ -20,12 +22,10 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
     render(): ReactElement<any> {
         const roles = this.props.roles;
         const term = this.props.term;
-        if (typeof term.sort == "string"){
-            if (term instanceof Name)
-                return this.renderTemplate(roles, term.name.toString());
-            throw new Error("FATAL");
+        if (term instanceof Identifier){
+            return this.renderTemplate(roles, term.toString());
         }else {
-            return this.renderTemplate(roles, term.sort.template);
+            return this.renderTemplate(roles, term.template);
         }
     }
 
@@ -59,14 +59,16 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
 
     renderHole(selector: Selector, roles: Array<string>): ReactElement<any> {
         const term = this.props.term;
-        const caret = this.props.caret;
+        if(term instanceof Identifier) throw new Error("No holes in an Identifier");
 
-        if(term instanceof LeafTerm) throw new Error("No holes in a Leaf");
+        let caret = this.props.caret;
+        if(caret)
+            caret = caret.contractAlong(term, selector);
 
-        let newCaret = term.contractAlong(caret, selector);
-        if(newCaret != undefined) roles.push("cursor");
+        if (caret != undefined)
+            roles.push("cursor");
 
-        return <MathTerm term={term.select(selector)} caret={newCaret} roles={roles} />
+        return <MathTerm term={selector.select(term)} caret={caret} roles={roles} />
     }
 
     renderBase(roles: Array<string>, atom: BaseAtom<Hole>): ReactElement<any> {

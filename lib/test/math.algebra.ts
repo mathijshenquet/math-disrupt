@@ -2,7 +2,7 @@
 import {Algebra} from "../nominal/algebra";
 import {Binder, Signature} from "../nominal/signature";
 import {Builder} from "../presentation/builder";
-import {Selector} from "../nominal/navigate";
+import {Selector} from "../nominal/selector";
 
 let binary = [Builder.bin(Builder.hole(Selector(0)), Builder.hole(Selector("head")), Builder.hole(Selector(1)))];
 

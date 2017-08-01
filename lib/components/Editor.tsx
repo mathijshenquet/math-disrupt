@@ -4,9 +4,10 @@
 
 import * as React from "react";
 import {KeyboardEvent, PureComponent, ReactElement} from "react";
-import {Term} from "../nominal/terms";
+import {Term} from "../nominal/term";
 import {MathInline} from "./containers";
-import {Cursor, Movement} from "../nominal/navigate";
+import {Cursor, Movement} from "../nominal/cursor";
+import {move} from "../nominal/navigable";
 
 //export type Doc = Array<string | TermNode>;
 
@@ -24,16 +25,16 @@ const ARROW_RIGHT = 39;
 export class Editor extends PureComponent<EditorProps, EditorState> {
     constructor(props: EditorProps){
         super(props);
-        this.state = {caret: props.term.enter(+1)};
+        this.state = {caret: Cursor.enter(props.term, +1)};
     }
 
     moveCaret(delta: Movement){
         const term = this.props.term;
-        let caretChange = term.move(this.state.caret, delta);
+        let caretChange = move(term, this.state.caret, delta);
         this.setState({
             caret: caretChange instanceof Cursor
                  ? caretChange
-                 : term.enter(-caretChange)
+                 : Cursor.enter(term, -caretChange)
         })
     }
 

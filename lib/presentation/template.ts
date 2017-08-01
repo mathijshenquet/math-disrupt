@@ -1,7 +1,7 @@
 
 import {Atom, children, Field} from "./markup";
-import {Selector} from "../nominal/navigate";
 import {flatten} from "../helper";
+import {Selector} from "../nominal/selector";
 
 export interface Hole {
     kind: "hole";

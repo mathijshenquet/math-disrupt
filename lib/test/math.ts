@@ -1,6 +1,6 @@
 
 
-import {Form} from "../nominal/terms";
+import {Form} from "../nominal/term";
 import $ from "./math.algebra";
 
 let y = $.atom("y");
