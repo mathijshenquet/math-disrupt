@@ -3,137 +3,135 @@
  */
 
 import {Map, Set} from "immutable";
-import {PermutationList, Swap, Shift, PermutationAction} from "./permutation";
-import {Identifier} from "./identifier";
+import {PermutationList, Swap, NominalSet, Permutation} from "./permutation";
+import {Name} from "./name";
 import {Bind, Form, Term, Composite} from "./term";
 import {Unknown} from "./unknown";
 
-export type Support = PermissionSet | FiniteSet;
+export class FiniteSet implements NominalSet {
+    readonly included: Set<Name>;
+
+    constructor(els: Iterable<Name> | Set<Name> = Set()){
+        this.included = els instanceof Set ? <Set<Name>>els : Set(els);
+    }
+
+    contains(name: Name): boolean{
+        return this.included.contains(name);
+    }
+
+    isSubset(other: FiniteSet): boolean{
+        return this.included.isSubset(other.included);
+    }
+
+    union(other: FiniteSet): FiniteSet{
+        return new FiniteSet(this.included.union(other.included));
+    }
+
+    remove(id: Name): FiniteSet {
+        return new FiniteSet(this.included.remove(id));
+    }
+
+    add(id: Name): FiniteSet {
+        return new FiniteSet(this.included.add(id));
+    }
+
+    report(): any {
+        return this.included.toJS();
+    }
+
+
+    /// NominalSet
+    act(perm: Permutation): FiniteSet {
+        return this.map(perm.apply.bind(perm));
+    }
+
+    private map(mapper: (value: Name, key: Name, iter: Set<Name>) => Name): FiniteSet {
+        return new FiniteSet(Set(this.included.map(mapper)));
+    }
+}
+
+export class CofiniteSet implements NominalSet {
+    readonly excluded: Set<Name>;
+
+    constructor(excluded: Set<Name> = Set()){
+        this.excluded = excluded;
+    }
+
+    contains(name: Name): boolean{
+        return !this.excluded.contains(name);
+    }
+
+    isSubset(other: Support): boolean{
+        if(other instanceof FiniteSet)
+            return other.included.intersect(this.excluded).isEmpty();
+
+        else
+            return this.excluded.isSuperset(other.excluded);
+    }
+
+    union(other: Support): Support{
+        if(other instanceof FiniteSet)
+            return new CofiniteSet(this.excluded.subtract(other.included));
+
+        else
+            return new CofiniteSet(this.excluded.intersect(other.excluded));
+    }
+
+    remove(id: Name): Support {
+        return new CofiniteSet(this.excluded.add(id));
+    }
+
+    report(): any {
+        return this.excluded.toJS();
+    }
+
+    /// PermissionSet
+    act(perm: Permutation): CofiniteSet {
+        return this.map(perm.apply.bind(perm));
+    }
+
+    private map(mapper: (value: Name, key: Name, iter: Set<Name>) => Name): CofiniteSet {
+        return new CofiniteSet(Set(this.excluded.map(mapper)));
+    }
+}
+
+export type Support = CofiniteSet | FiniteSet;
 
 export const Support = {
     union(left: Support, right: Support) : Support {
-        if(left instanceof PermissionSet){
+        if(left instanceof CofiniteSet){
             return left.union(right);
-        }else if(right instanceof PermissionSet){
+        }else if(right instanceof CofiniteSet){
             return right.union(left);
         }else{
-            return left.union(right); // use Set union
+            return left.union(right);
         }
     },
 
     isSubset(sup: Support, sub: Support){
-        if(sup instanceof Set && sub instanceof Set)
-            return (<any>sup).isSubset(sub);
+        if(sup instanceof FiniteSet && sub instanceof FiniteSet)
+            return sup.isSubset(sub);
 
-        else if(sup instanceof PermissionSet && sub instanceof PermissionSet)
+        else if(sup instanceof CofiniteSet)
             return sup.isSubset(sub);
 
         else
             return false;
     },
 
-    empty: Set<Identifier>(),
+    empty: new FiniteSet(),
 
-    singleton(id: Identifier): Support {
+    singleton(id: Name): Support {
         return new FiniteSet([id]);
     }
 };
 
-export class FiniteSet implements PermutationAction {
-    readonly elements: Set<Identifier>;
-
-    constructor(els: Iterable<Identifier> | Set<Identifier>){
-        this.elements = els instanceof Set ? <Set<Identifier>>els : Set(els);
-    }
-
-    contains(ident: Identifier): boolean{
-        return this.elements.contains(ident);
-    }
-
-    isSubset(other: FiniteSet): boolean{
-        return this.elements.isSubset(other.elements);
-    }
-
-    union(other: FiniteSet): Support{
-        return new FiniteSet(this.elements.union(other.elements));
-    }
-
-    remove(id: Identifier): Support {
-        return new FiniteSet(this.elements.remove(id));
-    }
-
-    report(): any {
-        return this.elements.toJS();
-    }
-
-    act(perm: PermutationList): FiniteSet {
-        if(perm instanceof Swap){
-            let left = perm.left, right = perm.right;
-
-            if(this.contains(left) == this.contains(right));
-
-        }else{
-
-        }
-    }
-}
-
-const maxMerger = (a: number, b: number) => Math.max(a, b);
-const subOne = (num: number) => num - 1;
-
-export class PermissionSet{
-    // enforce, number >= 0
-    readonly bounds: Map<string, number>;
-
-    constructor(bounds: Map<string, number> = Map()){
-        this.bounds = bounds;
-    }
-
-    getBound(base: string): number{
-        return this.bounds.get(base, 0);
-    }
-
-    contains(ident: Identifier): boolean{
-        return 0 <= ident.shift && ident.shift <= this.getBound(ident.base);
-    }
-
-    isSubset(other: PermissionSet): boolean{
-        let bounded = (bound: number, base: string) => (bound <= this.getBound(base));
-        return other.bounds.every(bounded);
-    }
-
-    union(other: Support): Support{
-        let updates;
-        if(other instanceof PermissionSet)
-            updates = other.bounds;
-
-        else
-            updates = Map<string, number>(
-                other.map((id: Identifier) => [id.base, id.shift])
-            );
-
-        return new PermissionSet(this.bounds.mergeWith(maxMerger, updates));
-    }
-
-    remove(id: Identifier): Support {
-        if(this.contains(id)){
-            return new PermissionSet(this.bounds.update(id.base, subOne));
-        }else{
-            return this;
-        }
-    }
-
-    report(): any {
-        return this.bounds.toJS();
-    }
-}
-
 export function support(term: Term): Support{
-    if(term instanceof Identifier)
+    if(term instanceof Name)
         return Support.singleton(term);
 
     else if(term instanceof Unknown)
-        return term.pms;
+        return term.pmss;
 
     else if(term instanceof Form)
         return support(term.argument);
@@ -147,85 +145,3 @@ export function support(term: Term): Support{
     else
         throw new Error("Unreachable in #support");
 }
-
-////////////////////////
-// OLD
-////////////////////////
-
-/*
-export class PermissionSet{
-    readonly positive: Set<Identifier>;
-    readonly negative: Set<Identifier>;
-
-    constructor(positive: Set<Identifier>, negative: Set<Identifier> = Set()){
-        this.positive = positive;
-        this.negative = negative;
-    }
-
-    inInfinitePart(id: Identifier){
-        // check if the shift is not too high
-        return id.inComb();
-    }
-
-    contains(id: Identifier){
-        return this.positive.contains(id)
-            || (id.inComb() && this.negative.contains(id));
-    }
-
-    isSubset(other: PermissionSet){
-        return this.positive.isSubset(other.positive)
-            && this.negative.isSuperset(other.negative);
-    }
-
-    union(other: Support): Support{
-        if(other instanceof PermissionSet){
-            let positive = this.positive.union(other.positive),
-                negative = this.negative.intersect(other.negative);
-            return new PermissionSet(positive, negative);
-        }
-
-        else{
-            return this.addAll(other);
-        }
-    }
-
-    add(id: Identifier): PermissionSet{
-        if(id.inComb()) {
-            return new PermissionSet(this.positive, this.negative.remove(id));
-        }else{
-            return new PermissionSet(this.positive.add(id), this.negative);
-        }
-    }
-
-    addAll(ids: Set<Identifier>): PermissionSet {
-        // add elements to the positive set that are NOT in the comb
-        let positive = this.positive.union(ids.filterNot(inComb));
-
-        // remove elements from the negative set that are in the comb
-        let negative = this.negative.subtract(ids.filter(inComb));
-
-        return new PermissionSet(positive, negative);
-    }
-
-    remove(id: Identifier): PermissionSet {
-        if(id.inComb()) {
-            return new PermissionSet(this.positive, this.negative.add(id));
-        }else{
-            return new PermissionSet(this.positive.remove(id), this.negative);
-        }
-    }
-
-    removeAll(ids: Set<Identifier>): PermissionSet {
-        // remove elements to the positive set that are NOT in the comb
-        let positive = this.positive.subtract(ids.filterNot(inComb));
-
-        // add elements from the negative set that are in the comb
-        let negative = this.negative.union(ids.filter(inComb));
-
-        return new PermissionSet(positive, negative);
-    }
-
-    report(): any{
-        return {positive: this.positive.toJS(), negative: this.negative.toJS()};
-    }
-}*/

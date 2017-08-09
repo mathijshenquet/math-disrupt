@@ -17,3 +17,5 @@ console.log(support(integral).report());
           integral.expand({}),
          "such that"];*/
 render(<Editor term={integral} />, document.getElementById("mount"));
+
+render(<Editor term={integral} />, document.getElementById("mount"));

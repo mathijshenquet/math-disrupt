@@ -16,7 +16,7 @@
  * @module presentation
  */
 
-import {Identifier} from "../nominal/identifier";
+import {Name} from "../nominal/name";
 
 /**
  * The basic structural element of presentational math is the MathList.

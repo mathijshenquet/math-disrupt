@@ -17,21 +17,21 @@
 import {computeHoles, Template} from "../presentation/template";
 import {Binder, Former, Product, Sort} from "./signature";
 import {Selectable, Selector} from "./selector";
-import {is, ValueType} from "immutable";
+import {is, ValueObject} from "immutable";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
  */
-export type Term = Identifier | Unknown | Bind | Form | Composite;
+export type Term = Name | Unknown | Bind | Form | Composite;
 
 /// Identifiers
-import {Id, Identifier} from "./identifier";
+import {N, Name} from "./name";
 
 // Unknown
 import {Unknown} from "./unknown";
 import {NavigableNode} from "./navigable";
 import {Builder} from "../presentation/builder";
-import {Swap} from "./permutation";
+import {NominalSet, Permutation, Swap} from "./permutation";
 import {support} from "./support";
 
 export abstract class DerivedTerm implements NavigableNode {
@@ -53,7 +53,7 @@ export abstract class DerivedTerm implements NavigableNode {
     }
 }
 
-export class Composite extends DerivedTerm implements Selectable, ValueType {
+export class Composite extends DerivedTerm implements Selectable, ValueObject, NominalSet {
     sort: Product;
     elements: Array<Term>;
     template: Template;
@@ -76,7 +76,7 @@ export class Composite extends DerivedTerm implements Selectable, ValueType {
             return this.elements[index];
     }
 
-    // ValueType
+    /// ValueObject
     equals(other: Composite): boolean {
         if(!is(this.sort, other.sort)) return false;
         for(let i = 0; i < this.elements.length; i++){
@@ -89,14 +89,19 @@ export class Composite extends DerivedTerm implements Selectable, ValueType {
     hashCode(): number {
         throw new Error("Method not implemented.");
     }
+
+    /// NominalSet
+    act(perm: Permutation): Composite {
+        return new Composite(this.elements.map((i) => i.act(perm)), this.sort);
+    }
 }
 
 /**
  * The bottom right rule from [NomSets] definition 8.2
  */
-export class Bind extends DerivedTerm implements Selectable, ValueType {
+export class Bind extends DerivedTerm implements Selectable, ValueObject, NominalSet {
     sort: Binder;
-    name: Identifier;
+    name: Name;
     term: Term;
     template: Template = [
         Builder.hole(Selector('name'), ["variant-normal"]),
@@ -104,7 +109,7 @@ export class Bind extends DerivedTerm implements Selectable, ValueType {
         Builder.hole(Selector('term'))
     ];
 
-    constructor(name: Identifier, term: Form, sort: Binder){
+    constructor(name: Name, term: Term, sort: Binder){
         super(sort);
 
         this.name = name;
@@ -120,13 +125,13 @@ export class Bind extends DerivedTerm implements Selectable, ValueType {
         }
     }
 
-    // ValueType
+    /// ValueObject
     equals(other: Bind): boolean {
         if(is(this.name, other.name)) {
             return is(this.term, other.term);
 
-        }else if(!support(other).contains(this.name)){
-            let otherR = swap(this.name, other.name, other);
+        }else if(!support(other.term).contains(this.name)){
+            let otherR = other.act(new Swap(this.name, other.name));
             return is(this.term, otherR.term);
         }
 
@@ -136,18 +141,23 @@ export class Bind extends DerivedTerm implements Selectable, ValueType {
     hashCode(): number {
         throw new Error("Method not implemented.");
     }
+
+    /// NominalSet
+    act(perm: Permutation): Bind {
+        return new Bind(this.name.act(perm), this.term.act(perm), this.sort);
+    }
 }
 
 /**
  * The top middle, top right and bottom left rules from [NomSets] definition 8.2
  */
-export class Form extends DerivedTerm implements Selectable, ValueType {
+export class Form extends DerivedTerm implements Selectable, ValueObject, NominalSet {
     sort: Former;
-    head: Identifier;
+    head: Name;
     argument: Composite;
     template: Template;
 
-    constructor(head: Identifier, argument: Composite, sort: Former){
+    constructor(head: Name, argument: Composite, sort: Former){
         super(sort);
 
         this.head = head;
@@ -160,16 +170,22 @@ export class Form extends DerivedTerm implements Selectable, ValueType {
     select(index: string | number): Term | undefined {
         if(typeof index === "number")
             return this.argument.select(index);
+
         else if(index == "head")
             return this.head;
     }
 
-    // ValueType
+    /// ValueObject
     equals(other: Form): boolean {
         return is(this.head, other.head) && is(this.argument, other.argument);
     }
 
     hashCode(): number {
         throw new Error("Method not implemented.");
+    }
+
+    /// NominalSet
+    act(perm: Permutation): Form {
+        return new Form(this.head.act(perm), this.argument.act(perm), this.sort);
     }
 }

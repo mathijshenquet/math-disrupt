@@ -9,7 +9,7 @@ import {Cursor} from "../nominal/cursor";
 import {Atom, BaseAtom} from "../presentation/markup";
 import {Hole, Template} from "../presentation/template";
 import {Sort} from "../nominal/signature";
-import {Identifier} from "../nominal/identifier";
+import {Name} from "../nominal/name";
 import {Selector} from "../nominal/selector";
 
 export interface MathTermProps  {
@@ -22,7 +22,7 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
     render(): ReactElement<any> {
         const roles = this.props.roles;
         const term = this.props.term;
-        if (term instanceof Identifier){
+        if (term instanceof Name){
             return this.renderTemplate(roles, term.toString());
         }else {
             return this.renderTemplate(roles, term.template);
@@ -59,7 +59,7 @@ export class MathTerm extends PureComponent<MathTermProps, {}> {
 
     renderHole(selector: Selector, roles: Array<string>): ReactElement<any> {
         const term = this.props.term;
-        if(term instanceof Identifier) throw new Error("No holes in an Identifier");
+        if(term instanceof Name) throw new Error("No holes in an Identifier");
 
         let caret = this.props.caret;
         if(caret)

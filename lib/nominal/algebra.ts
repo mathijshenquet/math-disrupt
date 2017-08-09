@@ -13,7 +13,7 @@
 
 import {Bind, Term, Form, Composite} from "./term";
 import {Binder, Signature} from "./signature";
-import {Id, Identifier} from "./identifier";
+import {N, Name} from "./name";
 
 /**
  * A name sorting for the countably infinite set A of atomic names is given by a
@@ -47,7 +47,7 @@ export class Algebra {
         return new Bind(this.atom(name), term, new Binder(name, term.sort));
     }
 
-    atom(name: string): Identifier{
-        return Id(name);
+    atom(name: string): Name{
+        return N(name);
     }
 }

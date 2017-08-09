@@ -1,21 +1,12 @@
 
-import {hash, ValueType, Set} from "immutable";
+import {hash, ValueObject, Set} from "immutable";
 import {Cursor, CursorChange, Movement} from "./cursor";
 import {Navigable, NavigableLeaf} from "./navigable";
 import {Support} from "./support";
+import {NominalSet, Permutation} from "./permutation";
 
-// TODO: ugly hack, lets hope we can use immutable v4 quickly
-declare module "immutable"{
-    function hash(value: any): number;
-
-    interface ValueType {
-        equals(other: this): boolean;
-        hashCode(): number;
-    }
-}
-
-export function Id(name: string, shift: number = 0){
-    return new Identifier(name, shift);
+export function N(name: string, shift: number = 0){
+    return new Name(name, shift);
 }
 
 /**
@@ -25,7 +16,7 @@ export function Id(name: string, shift: number = 0){
  * will write as x'. To make these shifts well behaved (invertible) we also
  * allow negative shift levels.
  */
-export class Identifier implements ValueType, NavigableLeaf {
+export class Name implements ValueObject, NavigableLeaf, NominalSet {
     readonly base: string;
     readonly shift: number;
     readonly tree: "leaf" = "leaf";
@@ -40,12 +31,12 @@ export class Identifier implements ValueType, NavigableLeaf {
         return this.shift <= 0;
     }
 
-    rename(name: string): Identifier {
-        return Id(name, this.shift);
+    rename(name: string): Name {
+        return N(name, this.shift);
     }
 
-    shiftBy(amount: number): Identifier {
-        return Id(this.base, this.shift + amount);
+    shiftBy(amount: number): Name {
+        return N(this.base, this.shift + amount);
     }
 
     toString(){
@@ -61,12 +52,17 @@ export class Identifier implements ValueType, NavigableLeaf {
         return Cursor.boundedChange(pos + movement, this.base.length);
     }
 
-    /// ValueType
-    equals(other: Identifier): boolean {
+    /// ValueObject
+    equals(other: Name): boolean {
         return this.base === other.base && this.shift === other.shift;
     }
 
     hashCode(): number {
         return hash(this.base) ^ hash(this.shift);
+    }
+
+    /// NominalSet
+    act(perm: Permutation): Name {
+        return perm.apply(this);
     }
 }

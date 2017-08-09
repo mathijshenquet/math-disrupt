@@ -1,52 +1,57 @@
-import {Set, Map} from "immutable";
+import {Set, ValueObject, Map, is, hash} from "immutable";
 import {Bind, Form, Term, Composite} from "./term";
-import {PermutationList, Shift, Swap} from "./permutation";
-import {Identifier} from "./identifier";
+import {NominalSet, Permutation, PermutationList, Swap} from "./permutation";
+import {Name} from "./name";
 import {Cursor, CursorChange, Movement} from "./cursor";
 import {Sort} from "./signature";
 import {NavigableLeaf} from "./navigable";
 import {Template} from "../presentation/template";
 import {Builder} from "../presentation/builder";
-import {PermissionSet} from "./support";
+import {CofiniteSet} from "./support";
 
 /**
- * In its basic form a PermissionSet is the atoms that are allowed to used in
- * some expression. To ensure names are fresh a collection of shifts is
- * remembered (See Shift).
-export class PermissionSet{
-    readonly shifts: Map<string, number>;
+ * Shift is the permutation that is used to ensure freshness. If we want to
+ * ensure that a is fresh for some expression S we shift the name a to a' so.
+ * This shifts the entire column sender (a, n) -> (a, n+1).
+ *
+export class Shift {
+    readonly name: string;
+    readonly amount: number = 1;
 
-    constructor(shifts: Map<string, number> = Map()){
-        this.shifts = shifts;
+    constructor(name: string, amount?: number){
+        this.name = name;
+        if(amount) this.amount = amount;
     }
 
-    permute(perm: Permutation) {
-        let shifts = this.shifts;
-        if (perm instanceof Shift) {
-            shifts = shifts.update(perm.name, 0,
-                (shift: number): number => shift + perm.amount);
+    freshen(name: Identifier): Identifier {
+        if(name.base == this.name)
+            name.shiftBy(this.amount);
 
-        }else if(perm instanceof Swap){
-            let leftShift = shifts.get(perm.left, 0);
-            let rightShift = shifts.get(perm.right, 0);
+        //TODO
 
-            shifts = shifts.set(perm.left, rightShift)
-                .set(perm.right, leftShift);
-        }
-
-        return new PermissionSet(shifts);
+        return name;
     }
-}*/
+}
+*/
 
-export class Unknown implements NavigableLeaf {
+export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
     sort: Sort;
-    pms: PermissionSet;
     name: string;
+    pmss: CofiniteSet;
+
     tree: "leaf" = "leaf";
     template: Template = [Builder.ord(this.name.toUpperCase())];
 
+    equals(other: this): boolean {
+        return this.name == other.name && is(this.pmss, other.pmss) && is(this.sort, other.sort);
+    }
+
+    hashCode(): number {
+        return hash(this.name) + hash(this.pmss) + hash(this.sort);
+    }
+
     constructor(name: string, sort: Sort){
-        this.pms = new PermissionSet();
+        this.pmss = new CofiniteSet();
         this.sort = sort;
         this.name = name;
     }
@@ -59,13 +64,18 @@ export class Unknown implements NavigableLeaf {
     step(pos: number, movement: Movement): CursorChange {
         throw new Error("Method not implemented.");
     }
+
+    /// NominalSet
+    act(perm: Permutation): Unknown {
+        return this;
+    }
 }
 
 /**
  * Computes the unknowns of a term
  */
 export function unknowns(term: Term): Set<Unknown>{
-    if(term instanceof Identifier) return Set();
+    if(term instanceof Name) return Set();
 
     else if(term instanceof Unknown) return Set([term]);
 

@@ -16,24 +16,22 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "webpack-dev-server"
   },
-  "devDependencies": {
-    "@types/react": "^15.6.0",
-    "@types/react-dom": "^15.5.1",
+  "dependencies": {
+    "@types/react": "^15.6.1",
+    "@types/react-dom": "^15.5.2",
     "awesome-typescript-loader": "^3.2.2",
     "babel-core": "^6.25.0",
     "css-loader": "^0.28.4",
     "extract-text-webpack-plugin": "^3.0.0",
+    "immutable": "^3.8.1",
     "less": "^2.7.2",
     "less-loader": "^4.0.5",
-    "preact": "^8.1.0",
-    "preact-compat": "^3.16.0",
+    "preact": "^8.2.1",
+    "preact-compat": "^3.17.0",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
-    "typescript": "^2.4.1",
-    "webpack": "^3.2.0",
-    "webpack-dev-server": "^2.6.1"
-  },
-  "dependencies": {
-    "immutable": "^3.8.1"
+    "typescript": "^2.4.2",
+    "webpack": "^3.5.1",
+    "webpack-dev-server": "^2.7.1"
   }
 }

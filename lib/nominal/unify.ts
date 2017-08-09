@@ -1,7 +1,7 @@
 
 import {Map, is} from "immutable";
 import {Bind, Composite, Form, Term} from "./term";
-import {Identifier} from "./identifier";
+import {Name} from "./name";
 import {substitute, Substitution} from "./substitution";
 import {Unknown, unknowns} from "./unknown";
 import {support, Support} from "./support";
@@ -20,17 +20,16 @@ export class UnifyEquality {
 
 export class UnifyFreshness {
     unify: "freshness" = "freshness";
-    name: Identifier;
+    name: Name;
     term: Term;
 
-    constructor(name: Identifier, term: Term){
+    constructor(name: Name, term: Term){
         this.name = name; this.term = term;
     }
 }
 
-export class UnifyProblem{
-
-    stack: Array<UnifyTask>;
+export class UnificationProblem{
+    private stack: Array<UnifyTask>;
     unifier: Substitution;
 
     constructor(){
@@ -38,32 +37,44 @@ export class UnifyProblem{
         this.unifier = Map();
     }
 
-    push(task: UnifyTask){
+    private push(task: UnifyTask){
         this.stack.push(task);
     }
 
-    pushEquality(left: Term, right: Term) {
-        this.push(new UnifyEquality(left, right));
-    }
-
-    pushFreshness(name: Identifier, term: Term) {
-        this.push(new UnifyFreshness(name, term));
-    }
-
-    pop(): UnifyTask | undefined{
+    private pop(): UnifyTask | undefined{
         return this.stack.pop();
     }
 
-    unify(unknown: Unknown, term: Term){
+    /**
+     * Add the equality constraint to the unification problem.
+     */
+    equality(left: Term, right: Term) {
+        this.push(new UnifyEquality(left, right));
+    }
+
+    /**
+     * Add the freshness constraint to the unification problem.
+     */
+    freshness(name: Name, term: Term) {
+        this.push(new UnifyFreshness(name, term));
+    }
+
+    // helper methods for simplify
+
+    private unify(unknown: Unknown, term: Term){
         this.unifier = this.unifier.set(unknown, term);
         let substitution = substitute.bind(Map().set(unknown, term));
         this.stack = this.stack.map(substitution);
     }
 
+    private freshen(term: Term, name: Name) {
+        //TODO
+    }
+
     /**
      * [NomTNL Definition 4.1.5]
      */
-    simplify(): boolean{
+    private simplify(): boolean{
         let task = this.pop();
         if(task === undefined) return false;
 
@@ -75,19 +86,19 @@ export class UnifyProblem{
                 return false;
 
             // =Identifier
-            if(left instanceof Identifier && right instanceof Identifier)
+            if(left instanceof Name && right instanceof Name)
                 return is(left, right);
 
             // =Form
             if(left instanceof Form && right instanceof Form){
-                this.pushEquality(left.argument, right.argument);
+                this.equality(left.argument, right.argument);
                 return true;
             }
 
             // =Composite
             if(left instanceof Composite && right instanceof Composite){
                 for(let i = 0; i < left.elements.length; i++)
-                    this.pushEquality(left.elements[i], right.elements[i]);
+                    this.equality(left.elements[i], right.elements[i]);
 
                 return true;
             }
@@ -122,19 +133,19 @@ export class UnifyProblem{
                 return true;
 
             if(term instanceof Form){
-                this.pushFreshness(name, term.argument);
+                this.freshness(name, term.argument);
                 return true;
             }
 
             if(term instanceof Composite){
                 for(let i = 0; i < term.elements.length; i++)
-                    this.pushFreshness(name, term.elements[i]);
+                    this.freshness(name, term.elements[i]);
 
                 return true;
             }
 
             if(term instanceof Bind){
-                this.pushFreshness(name, term.term);
+                this.freshness(name, term.term);
                 return true;
             }
         }
@@ -157,7 +168,7 @@ export class UnifyProblem{
             const term = task.term, name = task.name;
 
             if(term instanceof Unknown){
-                this.shift(term, name); // TODO
+                this.freshen(term, name);
             }
         }
 
