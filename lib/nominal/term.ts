@@ -17,6 +17,7 @@
 import {computeHoles, Template} from "../presentation/template";
 import {Binder, Former, Product, Sort} from "./signature";
 import {Selectable, Selector} from "./selector";
+import {is, ValueType} from "immutable";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
@@ -30,6 +31,8 @@ import {Id, Identifier} from "./identifier";
 import {Unknown} from "./unknown";
 import {NavigableNode} from "./navigable";
 import {Builder} from "../presentation/builder";
+import {Swap} from "./permutation";
+import {support} from "./support";
 
 export abstract class DerivedTerm implements NavigableNode {
     children: Array<Term>;
@@ -50,7 +53,7 @@ export abstract class DerivedTerm implements NavigableNode {
     }
 }
 
-export class Composite extends DerivedTerm implements Selectable {
+export class Composite extends DerivedTerm implements Selectable, ValueType {
     sort: Product;
     elements: Array<Term>;
     template: Template;
@@ -72,12 +75,26 @@ export class Composite extends DerivedTerm implements Selectable {
         if(typeof index === "number")
             return this.elements[index];
     }
+
+    // ValueType
+    equals(other: Composite): boolean {
+        if(!is(this.sort, other.sort)) return false;
+        for(let i = 0; i < this.elements.length; i++){
+            let left = this.elements[i], right = other.elements[i];
+            if(!is(left, right)) return false;
+        }
+        return true;
+    }
+
+    hashCode(): number {
+        throw new Error("Method not implemented.");
+    }
 }
 
 /**
  * The bottom right rule from [NomSets] definition 8.2
  */
-export class Bind extends DerivedTerm implements Selectable {
+export class Bind extends DerivedTerm implements Selectable, ValueType {
     sort: Binder;
     name: Identifier;
     term: Term;
@@ -102,12 +119,29 @@ export class Bind extends DerivedTerm implements Selectable {
             case "term": return this.term;
         }
     }
+
+    // ValueType
+    equals(other: Bind): boolean {
+        if(is(this.name, other.name)) {
+            return is(this.term, other.term);
+
+        }else if(!support(other).contains(this.name)){
+            let otherR = swap(this.name, other.name, other);
+            return is(this.term, otherR.term);
+        }
+
+        return false;
+    }
+
+    hashCode(): number {
+        throw new Error("Method not implemented.");
+    }
 }
 
 /**
  * The top middle, top right and bottom left rules from [NomSets] definition 8.2
  */
-export class Form extends DerivedTerm implements Selectable {
+export class Form extends DerivedTerm implements Selectable, ValueType {
     sort: Former;
     head: Identifier;
     argument: Composite;
@@ -128,5 +162,14 @@ export class Form extends DerivedTerm implements Selectable {
             return this.argument.select(index);
         else if(index == "head")
             return this.head;
+    }
+
+    // ValueType
+    equals(other: Form): boolean {
+        return is(this.head, other.head) && is(this.argument, other.argument);
+    }
+
+    hashCode(): number {
+        throw new Error("Method not implemented.");
     }
 }

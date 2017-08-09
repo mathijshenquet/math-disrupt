@@ -1,7 +1,8 @@
 
-import {hash, ValueType} from "immutable";
+import {hash, ValueType, Set} from "immutable";
 import {Cursor, CursorChange, Movement} from "./cursor";
 import {Navigable, NavigableLeaf} from "./navigable";
+import {Support} from "./support";
 
 // TODO: ugly hack, lets hope we can use immutable v4 quickly
 declare module "immutable"{
@@ -27,7 +28,8 @@ export function Id(name: string, shift: number = 0){
 export class Identifier implements ValueType, NavigableLeaf {
     readonly base: string;
     readonly shift: number;
-    tree: "leaf" = "leaf";
+    readonly tree: "leaf" = "leaf";
+    readonly sort: "identifier" = "identifier";
 
     constructor(name: string, shift: number){
         this.base = name;

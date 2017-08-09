@@ -1,18 +1,18 @@
 import {Set, Map} from "immutable";
 import {Bind, Form, Term, Composite} from "./term";
-import {Permutation, Shift, Swap} from "./permutation";
+import {PermutationList, Shift, Swap} from "./permutation";
 import {Identifier} from "./identifier";
 import {Cursor, CursorChange, Movement} from "./cursor";
 import {Sort} from "./signature";
 import {NavigableLeaf} from "./navigable";
 import {Template} from "../presentation/template";
 import {Builder} from "../presentation/builder";
+import {PermissionSet} from "./support";
 
 /**
  * In its basic form a PermissionSet is the atoms that are allowed to used in
  * some expression. To ensure names are fresh a collection of shifts is
  * remembered (See Shift).
- */
 export class PermissionSet{
     readonly shifts: Map<string, number>;
 
@@ -36,7 +36,7 @@ export class PermissionSet{
 
         return new PermissionSet(shifts);
     }
-}
+}*/
 
 export class Unknown implements NavigableLeaf {
     sort: Sort;

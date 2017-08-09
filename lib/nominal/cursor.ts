@@ -1,5 +1,4 @@
 
-import {Navigable} from "./navigable";
 import {Term} from "./term";
 import {Selector} from "./selector";
 
@@ -24,11 +23,12 @@ export class Cursor{
     }
 
     /**
-     * Create a Cursor by entering thing which is a GenericArray or a Navigable
+     * Create a Cursor by entering a term
      */
     static enter(thing: Term, movement: Movement): Cursor{
+        let side: number = ((1 - movement) / 2) | 0;
         if(thing.tree == "node") {
-            let head = (thing.children.length - 1) * (1 - movement) / 2;
+            let head = (thing.children.length - 1) * side;
             if (head < 0)
                 return new Cursor(head);
             else
@@ -47,6 +47,9 @@ export class Cursor{
         return this.tail ? this.tail.navigate(child) : child;
     }
 
+    /**
+     * Returns the current cursor as an array
+     */
     asArray(): Array<number>{
         let out = [];
         let caret: undefined | Cursor = this;
