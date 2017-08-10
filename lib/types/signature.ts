@@ -7,7 +7,6 @@ import {Selector} from "../nominal/selector";
 export let signature = new Signature(["name", "numeral"], ["term-check", "term-synth"]);
 
 // checkable terms (constructions)
-signature.define("embed", ["term-synth"], "term-check");
 signature.define("lambda", [new Binder("name", "term-check")], "term-check");
 signature.define("pi", ["term-check", new Binder("name", "term-check")], "term-check");
 signature.define("nat", [], "term-check");

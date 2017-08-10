@@ -5,13 +5,14 @@ import {compose, substitute, Substitution} from "../nominal/substitution";
 import {bind, binds} from "../nominal/unify";
 import {Term} from "../nominal/term";
 import {Sort} from "../nominal/signature";
+import {Unknown} from "../nominal/unknown";
 
 export type Type = Term;
 export type Expr = Term;
 
 export type Context = Map<Name, Term>;
 
-export type Judgement = Check | Synth | Compat;
+export type Judgement = Check | Synth | Compat | Lookup;
 
 export class TypeJudgement{
     context: Context;
@@ -66,6 +67,30 @@ export class Compat {
         return new Compat(
             substitution(this.sub),
             substitution(this.sup)
+        );
+    }
+}
+
+export class Lookup {
+    name: Name | Unknown;
+    type: Type;
+
+    constructor(name: Name | Unknown, type: Type){
+        this.name = name; this.type = type;
+    }
+
+    solve(checker: TypeChecker, ctx: Context): Substitution {
+        if(this.name instanceof Unknown || ctx.get(this.name) === this.type)
+            throw new Error("Variable not in context");
+
+        return Map();
+    }
+
+    substitute(sub: Substitution): Compat{
+        let substitution: (x: Term) => Term = substitute.bind(sub);
+        return new Compat(
+            substitution(this.name),
+            substitution(this.type)
         );
     }
 }
