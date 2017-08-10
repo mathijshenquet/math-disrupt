@@ -28,6 +28,38 @@ export class UnifyFreshness {
     }
 }
 
+/**
+ * A simple unification of a single equality problem where the
+ * rhs is the only side that can contain unknowns.
+ */
+export function bind(pattern: Term, subject: Term): Substitution{
+    let problem = new UnificationProblem();
+    problem.equality(pattern, subject);
+    if(problem.solve()){
+        return problem.unifier;
+    }else{
+        throw new Error("Cannot unify");
+    }
+}
+
+/**
+ * A simple unification of a single equality problem where the
+ * rhs is the only side that can contain unknowns.
+ */
+export function binds(...bindings: Array<[Term, Term]>): Substitution{
+    let problem = new UnificationProblem();
+
+    for(let binding of bindings){
+        problem.equality(binding[0], binding[1]);
+    }
+
+    if(problem.solve()){
+        return problem.unifier;
+    }else{
+        throw new Error("Cannot unify");
+    }
+}
+
 export class UnificationProblem{
     private stack: Array<UnifyTask>;
     unifier: Substitution;

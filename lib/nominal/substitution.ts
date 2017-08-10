@@ -11,7 +11,10 @@ import {support, Support} from "./support";
 
 export type Substitution = Map<Unknown, Term>;
 
-export function Substitution(X: Unknown, t: Term): Substitution {
+export function Substitution(X?: Unknown, t?: Term): Substitution {
+    if(X === undefined || t === undefined)
+        return Map();
+
     if(!Support.isSubset(support(t), X.pmss)){
         throw new Error("Invalid substitution");
     }else{
@@ -29,9 +32,8 @@ export function Substitutions(...pairs: Array<[Unknown, Term]>): Substitution {
     }));
 }
 
-export function compose(first: Substitution, second: Substitution){
-    return Map(first.map((term: Term) => substitute(second, term)))
-        .mergeWith((first: Term) => first, second);
+export function compose(first: Substitution, second: Substitution): Substitution {
+    return second.merge(first.map((term: Term) => substitute(second, term)));
 }
 
 export function substitute(sub: Substitution, term: Term): Term{

@@ -15,6 +15,6 @@ signature.define("num", ["numeral"], "term-check");
 
 // synthesiable terms (eliminations)
 signature.define("annotate", ["term-check", "term-check"], "term-synth");
-signature.define("apply", ["term-synth", "term-synth"], "term-synth");
+signature.define("apply", ["term-synth", "term-check"], "term-synth");
 signature.define("var", ["name"], "term-synth");
 signature.define("natrec", ["term-check", "term-check", "term-check"], "term-synth");
