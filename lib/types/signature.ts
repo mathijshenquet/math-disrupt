@@ -12,6 +12,7 @@ signature.define("lambda", [new Binder("name", "term-check")], "term-check");
 signature.define("pi", ["term-check", new Binder("name", "term-check")], "term-check");
 signature.define("nat", [], "term-check");
 signature.define("num", ["numeral"], "term-check");
+signature.define("universe", [], "term-check");
 
 // synthesiable terms (eliminations)
 signature.define("annotate", ["term-check", "term-check"], "term-synth");

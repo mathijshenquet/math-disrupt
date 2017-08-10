@@ -101,7 +101,7 @@ export class Composite extends DerivedTerm implements Selectable, ValueObject, N
  */
 export class Bind extends DerivedTerm implements Selectable, ValueObject, NominalSet {
     sort: Binder;
-    name: Name;
+    name: Name | Unknown;
     term: Term;
     template: Template = [
         Builder.hole(Selector('name'), ["variant-normal"]),
@@ -109,7 +109,7 @@ export class Bind extends DerivedTerm implements Selectable, ValueObject, Nomina
         Builder.hole(Selector('term'))
     ];
 
-    constructor(name: Name, term: Term, sort: Binder){
+    constructor(name: Name | Unknown, term: Term, sort: Binder){
         super(sort);
 
         this.name = name;
@@ -129,6 +129,9 @@ export class Bind extends DerivedTerm implements Selectable, ValueObject, Nomina
     equals(other: Bind): boolean {
         if(is(this.name, other.name)) {
             return is(this.term, other.term);
+
+        }else if(this.name instanceof Unknown || other.name instanceof Unknown){
+            return false;
 
         }else if(!support(other.term).contains(this.name)){
             let otherR = other.act(new Swap(this.name, other.name));

@@ -35,7 +35,7 @@ export class Shift {
 */
 
 export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
-    sort: Sort;
+    sort: string;
     name: string;
     pmss: CofiniteSet;
 
@@ -50,7 +50,7 @@ export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
         return hash(this.name) + hash(this.pmss) + hash(this.sort);
     }
 
-    constructor(name: string, sort: Sort){
+    constructor(name: string, sort: string){
         this.pmss = new CofiniteSet();
         this.sort = sort;
         this.name = name;

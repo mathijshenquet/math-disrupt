@@ -139,8 +139,11 @@ export function support(term: Term): Support{
     else if(term instanceof Composite)
         return term.elements.map(support).reduce(Support.union, Support.empty);
 
-    else if(term instanceof Bind)
+    else if(term instanceof Bind) {
+        if(term.name instanceof Unknown)
+            throw new Error("Cannot determine support for term with unknown names");
         return support(term.term).remove(term.name);
+    }
 
     else
         throw new Error("Unreachable in #support");
