@@ -1,16 +1,15 @@
 
+import {Map} from "immutable";
 import {
     TypeChecker, Check,
     Synth, Compat, Lookup
 } from "./bidirectional";
-import {Algebra} from "../nominal/algebra";
-import {Map} from "immutable";
+import $ from "./signature";
 
-let typechecker = new TypeChecker();
+const typechecker = new TypeChecker();
+export default typechecker;
 
-let $: Algebra = <any>undefined;
-
-let x = $.unknown("x", "term-name");
+let x = $.unknown("x", "name"), n = $.unknown("n", "numeral");
 
 let S = $.unknown("S", "term-check"),
     T = $.unknown("T", "term-check"),
@@ -44,6 +43,8 @@ typechecker.addCheck(T, e, [
     new Compat(S, T)
 ]);
 
+/// synth types
+
 // synth a check
 typechecker.addSynth($.op("annotate", t, T), T, [
    new Check(U, T),
@@ -59,4 +60,21 @@ typechecker.addSynth($.op("var", x), S, [
 typechecker.addSynth($.op("apply", f, s), $.op("sub", $.bind(x, T), $.op("annotate", s, S)), [
     new Synth(f, pi),
     new Check(S, s)
+]);
+
+/// nat
+
+// nat zero
+typechecker.addSynth($.op("z"), $.op("nat"), []);
+
+// nat succ
+typechecker.addSynth($.op("s", e), $.op("nat"), [
+    new Check(e, $.op("nat"))
+]);
+
+// nat rec
+typechecker.addSynth(T, $.op("natrec", e, t, s), [
+    new Check(s, $.op("nat")),
+    new Synth(e, T),
+    new Check(t, $.op("pi", T, $.bind(x, T)))
 ]);

@@ -6,11 +6,6 @@
  * [ProgMLTT]: Programming in Martin-Lof’s Type Theory
  *             http://www.cse.chalmers.se/research/group/logic/book/book.pdf
  *
- * Epistemic status: medium
- * The basis is good need some rethinking of how things are named.
- * Maybe consider following [NomSets] and [ProgMLTT] more closely and add
- * 'compound sorts' instead of rolling everything into Op.
- *
  * @module nominal/signature
  */
 

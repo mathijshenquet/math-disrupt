@@ -40,7 +40,7 @@ export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
     pmss: CofiniteSet;
 
     tree: "leaf" = "leaf";
-    template: Template = [Builder.ord(this.name.toUpperCase())];
+    template: Template;
 
     equals(other: this): boolean {
         return this.name == other.name && is(this.pmss, other.pmss) && is(this.sort, other.sort);
@@ -54,6 +54,7 @@ export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
         this.pmss = new CofiniteSet();
         this.sort = sort;
         this.name = name;
+        this.template = [Builder.ord(name.toUpperCase())];
     }
 
     // Navigable

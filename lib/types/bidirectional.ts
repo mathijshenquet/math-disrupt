@@ -35,7 +35,7 @@ export class TypeJudgement{
 
 export class Check extends TypeJudgement {
     solve(checker: TypeChecker, ctx: Context): Substitution {
-        if(!checker.check(ctx.merge(this.context), this.type, this.term))
+        if(!checker.check(this.type, this.term, ctx.merge(this.context)))
             throw new Error();
         return Map();
     }
@@ -43,7 +43,7 @@ export class Check extends TypeJudgement {
 
 export class Synth extends TypeJudgement {
     solve(checker: TypeChecker, ctx: Context): Substitution  {
-        let result = checker.synth(ctx.merge(this.context), this.term);
+        let result = checker.synth(this.term, ctx.merge(this.context));
         return bind(this.type, result);
     }
 }
@@ -117,6 +117,11 @@ export class TypeChecker {
     synthRules: Map<Sort, SynthRule>;
     checkRules: Map<Sort, CheckRule>;
 
+    constructor(){
+        this.synthRules = Map();
+        this.checkRules = Map();
+    }
+
     addSynth(T: Type, t: Term, conditions: Array<Judgement>){
         this.synthRules.set(T.sort, {
             type: T, term: t, conditions: conditions
@@ -132,7 +137,7 @@ export class TypeChecker {
     /**
      * Given a expression e, synthesize the type for that expression.
      */
-    synth(ctx: Context, e: Expr): Type {
+    synth(e: Expr, ctx: Context = Map()): Type {
         let rule: SynthRule = this.synthRules.get(e.sort); // get the relevant rule
 
         // a substitution binding the unknowns in rule.subject to the parts
@@ -156,7 +161,7 @@ export class TypeChecker {
      * Returns the term t is t in T otherwise, it might return a term t'
      * derived from term t which does belong to T.
      */
-    check(ctx: Context, T: Type, t: Term): boolean {
+    check(T: Type, t: Term, ctx: Context = Map()): boolean {
         // TODO check type T contains term t
         let rule: CheckRule = this.checkRules.get(T.sort); // get the relevant rule
 

@@ -1,3 +1,16 @@
+/*
+import $ from "./types/signature";
+import typeChecker from "./types/statics";
+
+let x = $.op("var", $.atom("x"));
+
+let add = $.op("annotate",
+    $.op("lambda", $.bind("x", $.op("s", x))),
+    $.op("pi", $.op("nat"), $.op("nat")));
+
+typeChecker.synth(add);
+/*/
+
 import {Editor} from "./components/Editor";
 
 declare const require:any;
@@ -10,12 +23,5 @@ import {support} from "./nominal/support";
 
 console.log(integral);
 console.log(support(integral).report());
-
-/*let doc = ["Let",
-          $.op("var", $.atom("x")).expand({}),
-          "be",
-          integral.expand({}),
-         "such that"];*/
-render(<Editor term={integral} />, document.getElementById("mount"));
 
 render(<Editor term={integral} />, document.getElementById("mount"));
