@@ -4,7 +4,7 @@
  * @module nominal/selector
  */
 import {Cursor} from "./cursor";
-import {Term} from "./term";
+import {Term} from "../nominal/term";
 
 /**
  * A selector is meant to specify a part of an term

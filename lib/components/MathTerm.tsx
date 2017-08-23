@@ -5,12 +5,12 @@
 import * as React from "react";
 import {PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/term";
-import {Cursor} from "../nominal/cursor";
+import {Cursor} from "../navigate/cursor";
 import {Atom, BaseAtom} from "../presentation/markup";
 import {Hole, Template} from "../presentation/template";
 import {Sort} from "../nominal/signature";
 import {Name} from "../nominal/name";
-import {Selector} from "../nominal/selector";
+import {Selector} from "../navigate/selector";
 
 export interface MathTermProps  {
     term: Term,

@@ -1,5 +1,5 @@
 import {Cursor, CursorChange, Movement} from "./cursor";
-import {Term} from "./term";
+import {Term} from "../nominal/term";
 
 export interface NavigableLeaf {
     tree: "leaf";

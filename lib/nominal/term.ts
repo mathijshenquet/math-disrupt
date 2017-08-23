@@ -16,20 +16,20 @@
 
 import {computeHoles, Template} from "../presentation/template";
 import {Binder, Former, Product, Sort} from "./signature";
-import {Selectable, Selector} from "./selector";
+import {Selectable, Selector} from "../navigate/selector";
 import {is, ValueObject} from "immutable";
 
 /**
  * The sets Σ of raw terms over set of atoms A. From [NomSets] definition 8.2
  */
-export type Term = Name | Unknown | Bind | Form | Composite;
+export type Term = Name | Composite | Form | Bind | Form | Hole;
 
 /// Identifiers
 import {N, Name} from "./name";
 
 // Unknown
-import {Unknown} from "./unknown";
-import {NavigableNode} from "./navigable";
+import {Hole} from "./hole";
+import {NavigableNode} from "../navigate/navigable";
 import {Builder} from "../presentation/builder";
 import {NominalSet, Permutation, Swap} from "./permutation";
 import {support} from "./support";
@@ -96,20 +96,21 @@ export class Composite extends DerivedTerm implements Selectable, ValueObject, N
     }
 }
 
+
 /**
  * The bottom right rule from [NomSets] definition 8.2
  */
 export class Bind extends DerivedTerm implements Selectable, ValueObject, NominalSet {
     sort: Binder;
-    name: Name | Unknown;
+    name: Name | Hole;
     term: Term;
     template: Template = [
         Builder.hole(Selector('name'), ["variant-normal"]),
-        Builder.punct(","),
+        Builder.punct("."),
         Builder.hole(Selector('term'))
     ];
 
-    constructor(name: Name | Unknown, term: Term, sort: Binder){
+    constructor(name: Name | Hole, term: Term, sort: Binder){
         super(sort);
 
         this.name = name;
@@ -130,7 +131,7 @@ export class Bind extends DerivedTerm implements Selectable, ValueObject, Nomina
         if(is(this.name, other.name)) {
             return is(this.term, other.term);
 
-        }else if(this.name instanceof Unknown || other.name instanceof Unknown){
+        }else if(this.name instanceof Hole || other.name instanceof Hole){
             return false;
 
         }else if(!support(other.term).contains(this.name)){
@@ -157,30 +158,30 @@ export class Bind extends DerivedTerm implements Selectable, ValueObject, Nomina
 export class Form extends DerivedTerm implements Selectable, ValueObject, NominalSet {
     sort: Former;
     head: Name;
-    argument: Composite;
+    parts: Composite;
     template: Template;
 
     constructor(head: Name, argument: Composite, sort: Former){
         super(sort);
 
         this.head = head;
-        this.argument = argument;
+        this.parts = argument;
         this.template = sort.template;
 
         this.computeChildren();
     }
 
     select(index: string | number): Term | undefined {
-        if(typeof index === "number")
-            return this.argument.select(index);
-
-        else if(index == "head")
+        if(index == "head")
             return this.head;
+
+        if(typeof index === "number")
+            return this.parts.select(index);
     }
 
     /// ValueObject
     equals(other: Form): boolean {
-        return is(this.head, other.head) && is(this.argument, other.argument);
+        return is(this.sort, other.sort) && is(this.parts, other.parts);
     }
 
     hashCode(): number {
@@ -189,6 +190,6 @@ export class Form extends DerivedTerm implements Selectable, ValueObject, Nomina
 
     /// NominalSet
     act(perm: Permutation): Form {
-        return new Form(this.head.act(perm), this.argument.act(perm), this.sort);
+        return new Form(this.head.act(perm), this.parts.act(perm), this.sort);
     }
 }

@@ -1,7 +1,7 @@
 
 import {hash, ValueObject, Set} from "immutable";
-import {Cursor, CursorChange, Movement} from "./cursor";
-import {Navigable, NavigableLeaf} from "./navigable";
+import {Cursor, CursorChange, Movement} from "../navigate/cursor";
+import {Navigable, NavigableLeaf} from "../navigate/navigable";
 import {Support} from "./support";
 import {NominalSet, Permutation} from "./permutation";
 

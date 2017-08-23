@@ -1,11 +1,11 @@
 
 import {is, Map} from "immutable";
 import {Name} from "../nominal/name";
-import {compose, substitute, Substitution} from "../nominal/substitution";
-import {bind, binds} from "../nominal/unify";
+import {compose, substitute, Substitution} from "../unify/substitution";
+import {bind, binds} from "../unify/unify";
 import {Term} from "../nominal/term";
 import {Sort} from "../nominal/signature";
-import {Unknown} from "../nominal/unknown";
+import {Hole} from "../nominal/hole";
 
 export type Type = Term;
 export type Expr = Term;
@@ -72,15 +72,15 @@ export class Compat {
 }
 
 export class Lookup {
-    name: Name | Unknown;
+    name: Name | Hole;
     type: Type;
 
-    constructor(name: Name | Unknown, type: Type){
+    constructor(name: Name | Hole, type: Type){
         this.name = name; this.type = type;
     }
 
     solve(checker: TypeChecker, ctx: Context): Substitution {
-        if(this.name instanceof Unknown || ctx.get(this.name) === this.type)
+        if(this.name instanceof Hole || ctx.get(this.name) === this.type)
             throw new Error("Variable not in context");
 
         return Map();

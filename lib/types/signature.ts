@@ -1,13 +1,15 @@
 
 import {Algebra} from "../nominal/algebra";
 import {Binder, Signature} from "../nominal/signature";
-import {Builder} from "../presentation/builder";
-import {Selector} from "../nominal/selector";
+import {Builder as $} from "../presentation/builder";
+import {Selector} from "../navigate/selector";
 
-export let signature = new Signature(["name", "numeral"], ["term-check", "term-synth"]);
+export let signature = new Signature(["name", "numeral"], ["term"]);
 
 // checkable terms (constructions)
-signature.define("lambda", [new Binder("name", "term-check")], "term-check");
+signature.define("lambda", ["name", new Binder("name", "term")], "term");
+//    [$.latex("lambda"), $.hole(Selector("0")), $.punct(","), $.hole(Selector("1"))]
+
 signature.define("pi", ["term-check", new Binder("name", "term-check")], "term-check");
 signature.define("nat", [], "term-check");
 signature.define("num", ["numeral"], "term-check");

@@ -6,7 +6,7 @@ import {Map, Set} from "immutable";
 import {PermutationList, Swap, NominalSet, Permutation} from "./permutation";
 import {Name} from "./name";
 import {Bind, Form, Term, Composite} from "./term";
-import {Unknown} from "./unknown";
+import {Hole} from "./hole";
 
 export class FiniteSet implements NominalSet {
     readonly included: Set<Name>;
@@ -130,17 +130,17 @@ export function support(term: Term): Support{
     if(term instanceof Name)
         return Support.singleton(term);
 
-    else if(term instanceof Unknown)
+    else if(term instanceof Hole)
         return term.pmss;
 
     else if(term instanceof Form)
-        return support(term.argument);
+        return support(term.parts);
 
     else if(term instanceof Composite)
         return term.elements.map(support).reduce(Support.union, Support.empty);
 
     else if(term instanceof Bind) {
-        if(term.name instanceof Unknown)
+        if(term.name instanceof Hole)
             throw new Error("Cannot determine support for term with unknown names");
         return support(term.term).remove(term.name);
     }

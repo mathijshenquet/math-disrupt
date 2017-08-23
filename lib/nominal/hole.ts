@@ -2,9 +2,9 @@ import {Set, ValueObject, Map, is, hash} from "immutable";
 import {Bind, Form, Term, Composite} from "./term";
 import {NominalSet, Permutation, PermutationList, Swap} from "./permutation";
 import {Name} from "./name";
-import {Cursor, CursorChange, Movement} from "./cursor";
+import {Cursor, CursorChange, Movement} from "../navigate/cursor";
 import {Sort} from "./signature";
-import {NavigableLeaf} from "./navigable";
+import {NavigableLeaf} from "../navigate/navigable";
 import {Template} from "../presentation/template";
 import {Builder} from "../presentation/builder";
 import {CofiniteSet} from "./support";
@@ -34,7 +34,7 @@ export class Shift {
 }
 */
 
-export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
+export class Hole implements NavigableLeaf, ValueObject, NominalSet {
     sort: string;
     name: string;
     pmss: CofiniteSet;
@@ -67,7 +67,7 @@ export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
     }
 
     /// NominalSet
-    act(perm: Permutation): Unknown {
+    act(perm: Permutation): Hole {
         return this;
     }
 }
@@ -75,17 +75,17 @@ export class Unknown implements NavigableLeaf, ValueObject, NominalSet {
 /**
  * Computes the unknowns of a term
  */
-export function unknowns(term: Term): Set<Unknown>{
+export function unknowns(term: Term): Set<Hole>{
     if(term instanceof Name) return Set();
 
-    else if(term instanceof Unknown) return Set([term]);
+    else if(term instanceof Hole) return Set([term]);
 
-    else if(term instanceof Form) return unknowns(term.argument);
+    else if(term instanceof Form) return unknowns(term.parts);
 
     else if(term instanceof Array)
         return term.reduce(
             (collection, item) => collection.union(unknowns(item))
-            , Set<Unknown>()
+            , Set<Hole>()
         );
 
     else if(term instanceof Bind)

@@ -14,7 +14,7 @@
 import {Bind, Term, Form, Composite} from "./term";
 import {Binder, Signature, Sort} from "./signature";
 import {N, Name} from "./name";
-import {Unknown} from "./unknown";
+import {Hole} from "./hole";
 
 /**
  * A name sorting for the countably infinite set A of atomic names is given by a
@@ -44,8 +44,8 @@ export class Algebra {
         return new Form(this.atom(head), new Composite(leaves, former.dom), former);
     }
 
-    bind(name: string | Unknown, term: Term): Bind {
-        let sort: string, atom: Name | Unknown;
+    bind(name: string | Hole, term: Term): Bind {
+        let sort: string, atom: Name | Hole;
         if(typeof name == "string") {
             atom = this.atom(name);
             sort = this.sorting(name);
@@ -62,6 +62,6 @@ export class Algebra {
     }
 
     unknown(name: string, sort: string){
-        return new Unknown(name, sort);
+        return new Hole(name, sort);
     }
 }

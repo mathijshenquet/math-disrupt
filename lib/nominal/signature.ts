@@ -11,14 +11,14 @@
 
 import {Builder} from "../presentation/builder"
 import {Template} from "../presentation/template";
-import {Selector} from "./selector";
+import {Selector} from "../navigate/selector";
 
 /**
  * These are the Sorts's of all the expressions. In [ProgMLTT] there is
  * essentially only one data sort 0 (using [NomSets] terminology).
  * The string and the string are the name and data sorts generating the
- * possible sorts. In [NomSets] this is analogous to the inductivily
- * genderated S (eq (8.2)). However here we limit our attention to only a single
+ * possible sorts. In [NomSets] this is analogous to the inductively
+ * generated S (eq (8.2)). However here we limit our attention to only a single
  * layer of Binding and a single layer of abstraction, i.e. only 'first order'
  * variables (In [ProgMLTT] it is remarked, in section 4.2, that only such first
  * order variables are needed for the type theory).

@@ -27,6 +27,7 @@
     "immutable": "^3.8.1",
     "less": "^2.7.2",
     "less-loader": "^4.0.5",
+    "mathy-unicode-characters": "^0.9.3",
     "preact": "^8.2.1",
     "preact-compat": "^3.17.0",
     "react": "^15.6.1",

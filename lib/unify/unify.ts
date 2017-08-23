@@ -1,10 +1,10 @@
 
 import {Map, is} from "immutable";
-import {Bind, Composite, Form, Term} from "./term";
-import {Name} from "./name";
+import {Bind, Composite, Form, Term} from "../nominal/term";
+import {Name} from "../nominal/name";
 import {substitute, Substitution} from "./substitution";
-import {Unknown, unknowns} from "./unknown";
-import {support, Support} from "./support";
+import {Hole, unknowns} from "../nominal/hole";
+import {support, Support} from "../nominal/support";
 
 export type UnifyTask = UnifyEquality | UnifyFreshness;
 
@@ -93,7 +93,7 @@ export class UnificationProblem{
 
     // helper methods for simplify
 
-    private unify(unknown: Unknown, term: Term){
+    private unify(unknown: Hole, term: Term){
         this.unifier = this.unifier.set(unknown, term);
         let substitution = substitute.bind(Map().set(unknown, term));
         this.stack = this.stack.map(substitution);
@@ -123,7 +123,7 @@ export class UnificationProblem{
 
             // =Form
             if(left instanceof Form && right instanceof Form){
-                this.equality(left.argument, right.argument);
+                this.equality(left.parts, right.parts);
                 return true;
             }
 
@@ -141,14 +141,14 @@ export class UnificationProblem{
             }
 
             // =Unknown
-            if(left instanceof Unknown && right instanceof Unknown){
+            if(left instanceof Hole && right instanceof Hole){
                 //TODO
             }
 
             // F
-            if(left instanceof Unknown || right instanceof Unknown){
+            if(left instanceof Hole || right instanceof Hole){
                 let unknown, term;
-                if(left instanceof Unknown) {
+                if(left instanceof Hole) {
                     unknown = left; term = right;
                 }else{
                     unknown = right; term = left;
@@ -165,7 +165,7 @@ export class UnificationProblem{
                 return true;
 
             if(term instanceof Form){
-                this.freshness(name, term.argument);
+                this.freshness(name, term.parts);
                 return true;
             }
 
@@ -185,8 +185,8 @@ export class UnificationProblem{
         // instantiation rules
         if(task.unify == "equality"){  // instantiate equality
             let unknown, term;
-            if(task.left instanceof Unknown) { unknown = task.left; term = task.right; }
-            else if(task.right instanceof Unknown){ unknown = task.right; term = task.left; }
+            if(task.left instanceof Hole) { unknown = task.left; term = task.right; }
+            else if(task.right instanceof Hole){ unknown = task.right; term = task.left; }
             else { return false; }
 
             let nonRecursive = !unknowns(term).contains(unknown);
@@ -199,7 +199,7 @@ export class UnificationProblem{
         }else{ // instantiate freshness
             const term = task.term, name = task.name;
 
-            if(term instanceof Unknown){
+            if(term instanceof Hole){
                 this.freshen(term, name);
             }
         }

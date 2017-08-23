@@ -1,5 +1,5 @@
 import {Term} from "../nominal/term";
-import {Cursor} from "../nominal/cursor";
+import {Cursor} from "../navigate/cursor";
 import {PureComponent, ReactElement} from "react";
 import {MathTerm} from "./MathTerm";
 import * as React from "react";

@@ -6,8 +6,8 @@ import * as React from "react";
 import {KeyboardEvent, PureComponent, ReactElement} from "react";
 import {Term} from "../nominal/term";
 import {MathInline} from "./containers";
-import {Cursor, Movement} from "../nominal/cursor";
-import {move} from "../nominal/navigable";
+import {Cursor, Movement} from "../navigate/cursor";
+import {move} from "../navigate/navigable";
 
 //export type Doc = Array<string | TermNode>;
 

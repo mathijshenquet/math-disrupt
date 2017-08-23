@@ -4,14 +4,14 @@
 
 
 import {List, Map} from "immutable";
-import {Bind, Composite, Form, Term} from "./term";
-import {Unknown} from "./unknown";
-import {Name} from "./name";
-import {support, Support} from "./support";
+import {Bind, Composite, Form, Term} from "../nominal/term";
+import {Hole} from "../nominal/hole";
+import {Name} from "../nominal/name";
+import {support, Support} from "../nominal/support";
 
-export type Substitution = Map<Unknown, Term>;
+export type Substitution = Map<Hole, Term>;
 
-export function Substitution(X?: Unknown, t?: Term): Substitution {
+export function Substitution(X?: Hole, t?: Term): Substitution {
     if(X === undefined || t === undefined)
         return Map();
 
@@ -22,7 +22,7 @@ export function Substitution(X?: Unknown, t?: Term): Substitution {
     }
 }
 
-export function Substitutions(...pairs: Array<[Unknown, Term]>): Substitution {
+export function Substitutions(...pairs: Array<[Hole, Term]>): Substitution {
     return Map(pairs.map(([X, t]) => {
         if (!Support.isSubset(support(t), X.pmss)) {
             throw new Error("Invalid substitution");
@@ -37,14 +37,14 @@ export function compose(first: Substitution, second: Substitution): Substitution
 }
 
 export function substitute(sub: Substitution, term: Term): Term{
-    if(term instanceof Unknown)
+    if(term instanceof Hole)
         return sub.get(term, term);
 
     else if(term instanceof Name)
         return term;
 
     else if(term instanceof Form)
-        return new Form(term.head, <Composite>substitute(sub, term.argument), term.sort);
+        return new Form(term.head, <Composite>substitute(sub, term.parts), term.sort);
 
     else if(term instanceof Composite)
         return new Composite(term.elements.map(substitute.bind(sub)), term.sort);

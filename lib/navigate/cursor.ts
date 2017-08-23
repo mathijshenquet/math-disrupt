@@ -1,5 +1,5 @@
 
-import {Term} from "./term";
+import {Term} from "../nominal/term";
 import {Selector} from "./selector";
 
 export enum Movement {
