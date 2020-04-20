@@ -3,7 +3,9 @@ interface StringToString{
     [index: string]: string
 }
 
-let latex2unicode: StringToString = require("latex2unicode");
+import * as latex2unicode from './latex2unicode.json';
+
+//let latex2unicode: StringToString = import("./latex2unicode.json");
 
 export function flatten<T>(arrays: Array<Array<T>>): Array<T> {
     return (<Array<T>>[]).concat(...arrays);
