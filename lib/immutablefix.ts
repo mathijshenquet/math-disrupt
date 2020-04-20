@@ -3,11 +3,11 @@
  */
 import "immutable";
 
-declare module "immutable"{
-    function hash(value: any): number;
+declare module "immutable" {
+  function hash(value: any): number;
 
-    interface ValueObject {
-        equals(other: this): boolean;
-        hashCode(): number;
-    }
+  interface ValueObject {
+    equals(other: this): boolean;
+    hashCode(): number;
+  }
 }

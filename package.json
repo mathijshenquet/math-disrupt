@@ -18,22 +18,21 @@
     "p": "tsc"
   },
   "dependencies": {
-    "@types/react": "^15.6.1",
-    "@types/react-dom": "^15.5.2",
-    "awesome-typescript-loader": "^3",
-    "babel-core": "^6.25.0",
-    "css-loader": "^0.28.4",
-    "extract-text-webpack-plugin": "^3.0.0",
-    "immutable": "^3.8.1",
-    "less": "^2.7.2",
-    "less-loader": "^4.0.5",
+    "@types/immutable": "^3.8.7",
+    "@types/react": "^16.9.34",
+    "@types/react-dom": "^16.9.6",
+    "css-loader": "^3.5.2",
+    "immutable": "^4.0.0-rc.12",
+    "less": "^3.11.1",
+    "less-loader": "^5.0.0",
     "mathy-unicode-characters": "^0.9.3",
-    "preact": "^8.2.1",
-    "preact-compat": "^3.17.0",
-    "react": "^15.6.1",
-    "react-dom": "^15.6.1",
-    "typescript": "^2.9",
-    "webpack": "^3.5.1",
-    "webpack-dev-server": "^2.7.1"
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "style-loader": "^1.1.4",
+    "ts-loader": "^7.0.1",
+    "typescript": "^3.8.3",
+    "webpack": "^4",
+    "webpack-cli": "^3.3.11",
+    "webpack-dev-server": "^3.10.3"
   }
 }

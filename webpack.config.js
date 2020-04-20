@@ -1,1 +1,30 @@
-const webpack = require("webpack");const path = require("path");const libraryName = require("./package.json").name;const ExtractTextPlugin = require('extract-text-webpack-plugin');const extractLESS = new ExtractTextPlugin("main.css");const plugins = [    new webpack.LoaderOptionsPlugin({        options: {            tslint: {                emitErrors: true,                failOnHint: true            }        }    }),    extractLESS];const config = {    entry: `${__dirname}/lib/index.tsx`,    devtool: "source-map",    output: {        filename: `${libraryName}.min.js`,        path: `${__dirname}/`,        libraryTarget: "umd",        library: libraryName    },    module: {        rules: [            // TODO for better code quality, enable            // {            //     enforce: 'pre',            //     test: /\.tsx?$/,            //     loader: 'tslint-loader',            //     exclude: /node_modules/            // },            {                test: /\.tsx?$/,                loader: "awesome-typescript-loader",                options: {                    useBabel: true                },                exclude: /node_modules/            },{                test: /\.less$/i,                exclude: /(node_modules|bower_components|public)/,                loader: extractLESS.extract(['css-loader', 'less-loader'])            },        ]    },    resolve: {        extensions: ['.js', '.ts', '.jsx', '.tsx']    },    plugins: plugins};module.exports = config;
+const libraryName = require("./package.json").name;
+
+const config = {
+  entry: "./lib/index.tsx",
+  devtool: "source-map",
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        use: "ts-loader",
+        exclude: /node_modules/,
+      },
+      {
+        test: /\.less$/,
+        exclude: /(node_modules)/,
+        use: ["style-loader", "css-loader", "less-loader"],
+      },
+    ],
+  },
+  resolve: {
+    extensions: [".tsx", ".ts", ".js"],
+    modules: ["node_modules"],
+  },
+  output: {
+    filename: `${libraryName}.min.js`,
+    path: `${__dirname}/`,
+  },
+};
+
+module.exports = config;
