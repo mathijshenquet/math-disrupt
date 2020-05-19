@@ -1,12 +1,11 @@
-
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "declaration": true,
     "jsx": "react",
     "module": "commonjs",
     "noImplicitAny": true,
     "preserveConstEnums": true,
+    "resolveJsonModule": true,
     "removeComments": true,
     "sourceMap": true,
     "target": "es6",
@@ -17,7 +16,6 @@
   "include": [
     "lib/**/*.ts",
     "lib/**/*.tsx",
-    "node_modules/awesome-typescript-loader/lib/runtime.d.ts"
   ],
   "exclude": [
     "node_modules",
